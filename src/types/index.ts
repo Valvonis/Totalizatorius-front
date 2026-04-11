@@ -61,6 +61,7 @@ export interface SpecialQuestion {
   type: "country" | "player";
   pointValue: number;
   correctAnswer: string | null;
+  answerImageUrl: string | null;
   isResolved: boolean;
   answers: SpecialAnswer[];
 }

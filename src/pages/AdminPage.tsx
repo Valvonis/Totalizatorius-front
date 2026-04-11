@@ -49,6 +49,7 @@ export default function AdminPage() {
   // Question resolving
   const [resolvingQuestion, setResolvingQuestion] = useState<string | null>(null);
   const [resolveAnswer, setResolveAnswer] = useState("");
+  const [resolveImageUrl, setResolveImageUrl] = useState("");
 
   // Answer photo editing
   const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
@@ -171,10 +172,15 @@ export default function AdminPage() {
     if (!resolveAnswer) return;
 
     try {
-      await dispatch(resolveQuestion({ id: questionId, correctAnswer: resolveAnswer })).unwrap();
+      await dispatch(resolveQuestion({
+        id: questionId,
+        correctAnswer: resolveAnswer,
+        answerImageUrl: resolveImageUrl || undefined,
+      })).unwrap();
       showToast("Klausimas išspręstas!", "success");
       setResolvingQuestion(null);
       setResolveAnswer("");
+      setResolveImageUrl("");
       if (tournament) dispatch(fetchQuestions(tournament._id));
     } catch {
       showToast("Nepavyko išspręsti klausimo", "error");
@@ -469,39 +475,50 @@ export default function AdminPage() {
                   {/* Resolve button */}
                   {!q.isResolved && (
                     resolvingQuestion === q._id ? (
-                      <div className="flex items-center gap-2 mt-2">
-                        {q.type === "country" ? (
-                          <select
-                            value={resolveAnswer}
-                            onChange={(e) => setResolveAnswer(e.target.value)}
-                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                      <div className="flex flex-col gap-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          {q.type === "country" ? (
+                            <select
+                              value={resolveAnswer}
+                              onChange={(e) => setResolveAnswer(e.target.value)}
+                              className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                            >
+                              <option value="">Teisingas atsakymas...</option>
+                              {countries.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              placeholder="Teisingas atsakymas (žaidėjo vardas)"
+                              value={resolveAnswer}
+                              onChange={(e) => setResolveAnswer(e.target.value)}
+                              className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                            />
+                          )}
+                          <button
+                            onClick={() => handleResolveQuestion(q._id)}
+                            className="p-1.5 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors"
                           >
-                            <option value="">Teisingas atsakymas...</option>
-                            {countries.map((c) => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
-                        ) : (
+                            <Check size={14} />
+                          </button>
+                          <button
+                            onClick={() => { setResolvingQuestion(null); setResolveAnswer(""); setResolveImageUrl(""); }}
+                            className="p-1.5 bg-gray-200 text-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        {q.type === "player" && (
                           <input
-                            type="text"
-                            placeholder="Teisingas atsakymas (žaidėjo vardas)"
-                            value={resolveAnswer}
-                            onChange={(e) => setResolveAnswer(e.target.value)}
-                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                            type="url"
+                            placeholder="Žaidėjo nuotraukos URL (neprivaloma)"
+                            value={resolveImageUrl}
+                            onChange={(e) => setResolveImageUrl(e.target.value)}
+                            className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                           />
                         )}
-                        <button
-                          onClick={() => handleResolveQuestion(q._id)}
-                          className="p-1.5 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors"
-                        >
-                          <Check size={14} />
-                        </button>
-                        <button
-                          onClick={() => { setResolvingQuestion(null); setResolveAnswer(""); }}
-                          className="p-1.5 bg-gray-200 text-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
                       </div>
                     ) : (
                       <button

@@ -59,6 +59,26 @@ export default function QuestionCard({ question }: QuestionCardProps) {
         </span>
       </div>
 
+      {/* Correct answer banner */}
+      {question.isResolved && question.correctAnswer && (
+        <div className="flex items-center justify-center gap-3 bg-green-50 border border-green-200 rounded-xl py-2.5 px-4">
+          <Check size={16} className="text-green-600 shrink-0" />
+          {question.type === "country" ? (
+            <div className="flex items-center gap-2">
+              <Flag countryName={question.correctAnswer} size={28} />
+              <span className="font-bold text-green-800 text-sm">{question.correctAnswer}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              {question.answerImageUrl && (
+                <img src={question.answerImageUrl} alt={question.correctAnswer} className="w-8 h-8 rounded-full object-cover" />
+              )}
+              <span className="font-bold text-green-800 text-sm">{question.correctAnswer}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Existing answers */}
       {question.answers.length > 0 && (
         <div className="grid grid-cols-3 gap-2">

@@ -42,11 +42,11 @@ export const createQuestion = createAsyncThunk(
 export const resolveQuestion = createAsyncThunk(
   "questions/resolve",
   async (
-    { id, correctAnswer }: { id: string; correctAnswer: string },
+    { id, correctAnswer, answerImageUrl }: { id: string; correctAnswer: string; answerImageUrl?: string },
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.patch(`/questions/${id}`, { correctAnswer });
+      const { data } = await api.patch(`/questions/${id}`, { correctAnswer, answerImageUrl });
       return data;
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -110,8 +110,8 @@ const questionsSlice = createSlice({
       .addCase(resolveQuestion.fulfilled, (state, action) => {
         const idx = state.items.findIndex((q) => q._id === action.payload._id);
         if (idx !== -1) {
-          // Only update question fields, preserve existing answers array
           state.items[idx].correctAnswer = action.payload.correctAnswer;
+          state.items[idx].answerImageUrl = action.payload.answerImageUrl;
           state.items[idx].isResolved = action.payload.isResolved;
         }
       });
