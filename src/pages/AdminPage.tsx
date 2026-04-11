@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { createMatch, updateMatch, fetchMatches } from "../features/matches/matchesSlice";
 import { fetchActiveTournament, createTournament, setActiveTournament, fetchAllTournaments, updateTournamentLogo } from "../features/tournaments/tournamentSlice";
-import { fetchQuestions, createQuestion, resolveQuestion } from "../features/questions/questionsSlice";
+import { fetchQuestions, createQuestion, resolveQuestion, updateAnswerPhoto } from "../features/questions/questionsSlice";
 import { useAuth } from "../features/auth/useAuth";
 import { Navigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -49,6 +49,10 @@ export default function AdminPage() {
   // Question resolving
   const [resolvingQuestion, setResolvingQuestion] = useState<string | null>(null);
   const [resolveAnswer, setResolveAnswer] = useState("");
+
+  // Answer photo editing
+  const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState("");
 
   useEffect(() => {
     dispatch(fetchActiveTournament());
@@ -147,6 +151,19 @@ export default function AdminPage() {
       setQPoints("10");
     } catch {
       showToast("Nepavyko sukurti klausimo", "error");
+    }
+  };
+
+  const handleUpdatePhoto = async (answerId: string) => {
+    if (!photoUrl) return;
+    try {
+      await dispatch(updateAnswerPhoto({ answerId, imageUrl: photoUrl })).unwrap();
+      showToast("Nuotrauka atnaujinta!", "success");
+      setEditingPhoto(null);
+      setPhotoUrl("");
+      if (tournament) dispatch(fetchQuestions(tournament._id));
+    } catch {
+      showToast("Nepavyko atnaujinti nuotraukos", "error");
     }
   };
 
@@ -396,14 +413,53 @@ export default function AdminPage() {
 
                   {/* Answers from players */}
                   {q.answers.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div className="flex flex-col gap-2 mb-2">
                       {q.answers.map((a) => (
-                        <div key={a._id} className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg text-xs border border-gray-200">
-                          <span className="text-gray-400">{a.playerId.name}:</span>
-                          {q.type === "country" && <Flag countryName={a.answer} size={16} />}
-                          <span className="font-medium">{a.answer}</span>
-                          {a.points !== null && (
-                            <span className={`font-bold ${a.points > 0 ? "text-green-600" : "text-gray-400"}`}>+{a.points}</span>
+                        <div key={a._id} className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-lg text-xs border border-gray-200">
+                            {a.additionalData?.imageUrl && (
+                              <img src={a.additionalData.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
+                            )}
+                            <span className="text-gray-400">{a.playerId.name}:</span>
+                            {q.type === "country" && <Flag countryName={a.answer} size={16} />}
+                            <span className="font-medium">{a.answer}</span>
+                            {a.points !== null && (
+                              <span className={`font-bold ${a.points > 0 ? "text-green-600" : "text-gray-400"}`}>+{a.points}</span>
+                            )}
+                            {q.type === "player" && (
+                              <button
+                                onClick={() => { setEditingPhoto(a._id); setPhotoUrl(a.additionalData?.imageUrl || ""); }}
+                                className="ml-auto text-gray-400 hover:text-gray-600 cursor-pointer"
+                              >
+                                {a.additionalData?.imageUrl ? "Keisti foto" : "Pridėti foto"}
+                              </button>
+                            )}
+                          </div>
+                          {editingPhoto === a._id && (
+                            <div className="flex items-center gap-2 ml-4">
+                              <input
+                                type="url"
+                                placeholder="Žaidėjo nuotraukos URL (https://...)"
+                                value={photoUrl}
+                                onChange={(e) => setPhotoUrl(e.target.value)}
+                                className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                              />
+                              <button
+                                onClick={() => handleUpdatePhoto(a._id)}
+                                className="p-1.5 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors"
+                              >
+                                <Save size={12} />
+                              </button>
+                              <button
+                                onClick={() => { setEditingPhoto(null); setPhotoUrl(""); }}
+                                className="p-1.5 bg-gray-200 text-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
+                              >
+                                <X size={12} />
+                              </button>
+                              {photoUrl && (
+                                <img src={photoUrl} alt="Preview" className="w-6 h-6 rounded-full object-cover" />
+                              )}
+                            </div>
                           )}
                         </div>
                       ))}

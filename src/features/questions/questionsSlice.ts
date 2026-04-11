@@ -55,6 +55,22 @@ export const resolveQuestion = createAsyncThunk(
   }
 );
 
+export const updateAnswerPhoto = createAsyncThunk(
+  "questions/updateAnswerPhoto",
+  async (
+    { answerId, imageUrl }: { answerId: string; imageUrl: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.patch(`/answers/${answerId}`, { additionalData: { imageUrl } });
+      return data;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      return rejectWithValue(error.response?.data?.message || "Failed to update photo");
+    }
+  }
+);
+
 export const submitAnswer = createAsyncThunk(
   "questions/submitAnswer",
   async (
@@ -94,7 +110,9 @@ const questionsSlice = createSlice({
       .addCase(resolveQuestion.fulfilled, (state, action) => {
         const idx = state.items.findIndex((q) => q._id === action.payload._id);
         if (idx !== -1) {
-          state.items[idx] = { ...state.items[idx], ...action.payload };
+          // Only update question fields, preserve existing answers array
+          state.items[idx].correctAnswer = action.payload.correctAnswer;
+          state.items[idx].isResolved = action.payload.isResolved;
         }
       });
   },
