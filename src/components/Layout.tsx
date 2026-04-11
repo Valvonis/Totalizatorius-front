@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <header className="bg-[var(--color-primary)] border-b border-white/20 sticky top-0 z-30 shadow-lg">
+      <header className="bg-[#0d1328]/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg">
         {/* Top row: branding + nav */}
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">

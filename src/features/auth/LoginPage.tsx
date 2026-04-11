@@ -34,7 +34,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[var(--color-primary-light)]">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0f1e", backgroundImage: "radial-gradient(ellipse 80% 50% at 50% 40%, rgba(33, 54, 144, 0.5) 0%, transparent 70%)" }}>
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm flex flex-col gap-5 animate-scale-in"
