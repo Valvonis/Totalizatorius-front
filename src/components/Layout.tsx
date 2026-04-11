@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../hooks";
 import { useAuth } from "../features/auth/useAuth";
@@ -9,13 +9,27 @@ import { fetchMatches } from "../features/matches/matchesSlice";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchQuestions } from "../features/questions/questionsSlice";
 import Scoreboard from "../features/scoreboard/Scoreboard";
-import { LogOut, Shield, Home, ChevronDown } from "lucide-react";
+import { LogOut, Shield, Home, ChevronDown, Sun, Moon } from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const { player, isAdmin } = useAuth();
   const tournament = useAppSelector((s) => s.tournament.active);
   const allTournaments = useAppSelector((s) => s.tournament.all);
+
+  const [theme, setTheme] = useState<"stadium" | "gradient">(() => {
+    return (localStorage.getItem("bg-theme") as "stadium" | "gradient") || "stadium";
+  });
+
+  useEffect(() => {
+    document.body.classList.remove("theme-stadium", "theme-gradient");
+    document.body.classList.add(`theme-${theme}`);
+    localStorage.setItem("bg-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "stadium" ? "gradient" : "stadium"));
+  }, []);
 
   useEffect(() => {
     dispatch(fetchAllTournaments());
@@ -30,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <header className="bg-[#0d1328]/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg">
+      <header className={`border-b sticky top-0 z-30 shadow-lg backdrop-blur-md transition-colors duration-500 ${theme === "stadium" ? "bg-[#0d1328]/90 border-white/10" : "bg-[var(--color-primary)]/95 border-white/20"}`}>
         {/* Top row: branding + nav */}
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -75,6 +89,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Shield size={20} />
                 </Link>
               )}
+              <button
+                onClick={toggleTheme}
+                className="text-white/60 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10 cursor-pointer"
+                title={theme === "stadium" ? "Perjungti į gradientą" : "Perjungti į stadiono apšvietimą"}
+              >
+                {theme === "stadium" ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
             </nav>
             {player && (
               <button
