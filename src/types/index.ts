@@ -50,7 +50,7 @@ export interface SpecialAnswer {
   _id: string;
   playerId: { _id: string; name: string; slug: string };
   answer: string;
-  additionalData?: { player?: string; fullName?: string; goals?: number };
+  additionalData?: { player?: string; fullName?: string; goals?: number; imageUrl?: string };
   points: number | null;
 }
 

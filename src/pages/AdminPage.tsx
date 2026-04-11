@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { createMatch, updateMatch, fetchMatches } from "../features/matches/matchesSlice";
 import { fetchActiveTournament, createTournament, setActiveTournament, fetchAllTournaments, updateTournamentLogo } from "../features/tournaments/tournamentSlice";
+import { fetchQuestions, createQuestion, resolveQuestion } from "../features/questions/questionsSlice";
 import { useAuth } from "../features/auth/useAuth";
 import { Navigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -9,7 +10,7 @@ import Flag from "../components/Flag";
 import { getCountryNames } from "../utils/countries";
 import { isMatchStarted, formatMatchTime } from "../utils/date";
 import { showToast } from "../components/ui/Toast";
-import { Plus, Save, Trophy, Check, X } from "lucide-react";
+import { Plus, Save, Trophy, Check, X, HelpCircle, Award } from "lucide-react";
 
 export default function AdminPage() {
   const dispatch = useAppDispatch();
@@ -17,6 +18,7 @@ export default function AdminPage() {
   const tournament = useAppSelector((s) => s.tournament.active);
   const allTournaments = useAppSelector((s) => s.tournament.all);
   const matches = useAppSelector((s) => s.matches.items);
+  const questions = useAppSelector((s) => s.questions.items);
   const countries = getCountryNames();
 
   const [team1, setTeam1] = useState("");
@@ -39,13 +41,25 @@ export default function AdminPage() {
   const [editingLogo, setEditingLogo] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState("");
 
+  // Question creation
+  const [qText, setQText] = useState("");
+  const [qType, setQType] = useState<"country" | "player">("country");
+  const [qPoints, setQPoints] = useState("10");
+
+  // Question resolving
+  const [resolvingQuestion, setResolvingQuestion] = useState<string | null>(null);
+  const [resolveAnswer, setResolveAnswer] = useState("");
+
   useEffect(() => {
     dispatch(fetchActiveTournament());
     dispatch(fetchAllTournaments());
   }, [dispatch]);
 
   useEffect(() => {
-    if (tournament) dispatch(fetchMatches(tournament._id));
+    if (tournament) {
+      dispatch(fetchMatches(tournament._id));
+      dispatch(fetchQuestions(tournament._id));
+    }
   }, [dispatch, tournament]);
 
   if (!isAdmin) return <Navigate to="/" />;
@@ -114,6 +128,39 @@ export default function AdminPage() {
       setLogoUrl("");
     } catch {
       showToast("Nepavyko atnaujinti logotipo", "error");
+    }
+  };
+
+  const handleCreateQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!qText || !tournament) return;
+
+    try {
+      await dispatch(createQuestion({
+        tournamentId: tournament._id,
+        question: qText,
+        type: qType,
+        pointValue: Number(qPoints) || 10,
+      })).unwrap();
+      showToast("Klausimas sukurtas!", "success");
+      setQText("");
+      setQPoints("10");
+    } catch {
+      showToast("Nepavyko sukurti klausimo", "error");
+    }
+  };
+
+  const handleResolveQuestion = async (questionId: string) => {
+    if (!resolveAnswer) return;
+
+    try {
+      await dispatch(resolveQuestion({ id: questionId, correctAnswer: resolveAnswer })).unwrap();
+      showToast("Klausimas išspręstas!", "success");
+      setResolvingQuestion(null);
+      setResolveAnswer("");
+      if (tournament) dispatch(fetchQuestions(tournament._id));
+    } catch {
+      showToast("Nepavyko išspręsti klausimo", "error");
     }
   };
 
@@ -312,6 +359,149 @@ export default function AdminPage() {
             >
               <Plus size={18} />
               Sukurti
+            </button>
+          </form>
+        </div>
+
+        {/* Special Questions Management */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <HelpCircle size={22} />
+            Specialūs klausimai
+          </h2>
+
+          {/* Existing questions */}
+          {questions.length > 0 && (
+            <div className="flex flex-col gap-3 mb-6">
+              {questions.map((q) => (
+                <div
+                  key={q._id}
+                  className={`p-4 rounded-xl ${q.isResolved ? "bg-green-50 ring-1 ring-green-300" : "bg-gray-50"}`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${q.type === "country" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>
+                        {q.type === "country" ? "Šalis" : "Žaidėjas"}
+                      </span>
+                      <span className="font-bold text-sm">{q.question}</span>
+                      <span className="text-xs text-[var(--color-accent)] font-bold">+{q.pointValue}</span>
+                    </div>
+                    {q.isResolved && (
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                        <Check size={12} />
+                        {q.correctAnswer}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Answers from players */}
+                  {q.answers.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {q.answers.map((a) => (
+                        <div key={a._id} className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg text-xs border border-gray-200">
+                          <span className="text-gray-400">{a.playerId.name}:</span>
+                          {q.type === "country" && <Flag countryName={a.answer} size={16} />}
+                          <span className="font-medium">{a.answer}</span>
+                          {a.points !== null && (
+                            <span className={`font-bold ${a.points > 0 ? "text-green-600" : "text-gray-400"}`}>+{a.points}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Resolve button */}
+                  {!q.isResolved && (
+                    resolvingQuestion === q._id ? (
+                      <div className="flex items-center gap-2 mt-2">
+                        {q.type === "country" ? (
+                          <select
+                            value={resolveAnswer}
+                            onChange={(e) => setResolveAnswer(e.target.value)}
+                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                          >
+                            <option value="">Teisingas atsakymas...</option>
+                            {countries.map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            placeholder="Teisingas atsakymas (žaidėjo vardas)"
+                            value={resolveAnswer}
+                            onChange={(e) => setResolveAnswer(e.target.value)}
+                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                          />
+                        )}
+                        <button
+                          onClick={() => handleResolveQuestion(q._id)}
+                          className="p-1.5 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors"
+                        >
+                          <Check size={14} />
+                        </button>
+                        <button
+                          onClick={() => { setResolvingQuestion(null); setResolveAnswer(""); }}
+                          className="p-1.5 bg-gray-200 text-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setResolvingQuestion(q._id)}
+                        className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer mt-1"
+                      >
+                        <Award size={13} />
+                        Išspręsti klausimą
+                      </button>
+                    )
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Create new question */}
+          <form onSubmit={handleCreateQuestion} className="flex flex-col gap-3 border-t border-gray-200 pt-4">
+            <h3 className="text-sm font-bold text-gray-600">Naujas klausimas</h3>
+            <input
+              type="text"
+              placeholder="Klausimo tekstas (pvz. Kas laimės turnyrą?)"
+              value={qText}
+              onChange={(e) => setQText(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Tipas</label>
+                <select
+                  value={qType}
+                  onChange={(e) => setQType(e.target.value as "country" | "player")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                >
+                  <option value="country">Šalis (renkamasi iš sąrašo su vėliavomis)</option>
+                  <option value="player">Žaidėjas (įvedamas vardas)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Taškai</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={qPoints}
+                  onChange={(e) => setQPoints(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="flex items-center justify-center gap-2 py-2 bg-[var(--color-primary)] text-white rounded-xl font-bold text-sm hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer"
+            >
+              <Plus size={16} />
+              Sukurti klausimą
             </button>
           </form>
         </div>

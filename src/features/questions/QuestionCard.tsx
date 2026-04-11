@@ -43,6 +43,13 @@ export default function QuestionCard({ question }: QuestionCardProps) {
                 </>
               ) : (
                 <>
+                  {a.additionalData?.imageUrl ? (
+                    <img
+                      src={a.additionalData.imageUrl}
+                      alt={a.answer}
+                      className={`w-10 h-10 rounded-full object-cover ${wrong ? "opacity-40 grayscale" : ""}`}
+                    />
+                  ) : null}
                   <span className={`text-sm font-bold ${wrong ? "text-gray-400 line-through" : "text-gray-800"}`}>
                     {a.answer}
                   </span>

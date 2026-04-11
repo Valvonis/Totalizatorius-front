@@ -23,6 +23,38 @@ export const fetchQuestions = createAsyncThunk(
   }
 );
 
+export const createQuestion = createAsyncThunk(
+  "questions/create",
+  async (
+    { tournamentId, question, type, pointValue }: { tournamentId: string; question: string; type: "country" | "player"; pointValue?: number },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.post("/questions", { tournamentId, question, type, pointValue });
+      return data;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      return rejectWithValue(error.response?.data?.message || "Failed to create question");
+    }
+  }
+);
+
+export const resolveQuestion = createAsyncThunk(
+  "questions/resolve",
+  async (
+    { id, correctAnswer }: { id: string; correctAnswer: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.patch(`/questions/${id}`, { correctAnswer });
+      return data;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      return rejectWithValue(error.response?.data?.message || "Failed to resolve question");
+    }
+  }
+);
+
 export const submitAnswer = createAsyncThunk(
   "questions/submitAnswer",
   async (
@@ -55,6 +87,15 @@ const questionsSlice = createSlice({
       .addCase(fetchQuestions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch questions";
+      })
+      .addCase(createQuestion.fulfilled, (state, action) => {
+        state.items.push({ ...action.payload, answers: [] });
+      })
+      .addCase(resolveQuestion.fulfilled, (state, action) => {
+        const idx = state.items.findIndex((q) => q._id === action.payload._id);
+        if (idx !== -1) {
+          state.items[idx] = { ...state.items[idx], ...action.payload };
+        }
       });
   },
 });
