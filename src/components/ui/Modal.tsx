@@ -13,7 +13,7 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 z-40 animate-fade-in" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto max-sm:w-full max-sm:max-w-full max-sm:h-full max-sm:max-h-full max-sm:rounded-none">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto max-sm:w-full max-sm:max-w-full max-sm:h-full max-sm:max-h-full max-sm:rounded-none animate-scale-in">
           <div className="flex items-center justify-between mb-4">
             {title && (
               <Dialog.Title className="text-xl font-bold text-gray-900">

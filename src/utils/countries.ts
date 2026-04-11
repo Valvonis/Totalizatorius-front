@@ -25,7 +25,7 @@ const countries: Record<string, string> = {
   Lenkija: "PL",
   Lietuva: "LT",
   Meksika: "MX",
-  Nyderlandai: "NL",
+  Olandija: "NL",
   Norvegija: "NO",
   Portugalija: "PT",
   Prancūzija: "FR",

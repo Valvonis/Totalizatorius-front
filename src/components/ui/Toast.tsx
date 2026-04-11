@@ -35,7 +35,7 @@ export default function ToastContainer() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white text-sm ${
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-white text-sm font-medium animate-slide-in-right ${
             t.type === "error" ? "bg-red-600" : "bg-green-600"
           }`}
         >

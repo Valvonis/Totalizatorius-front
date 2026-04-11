@@ -7,6 +7,7 @@ import Modal from "../../components/ui/Modal";
 import GoalSlider from "../../components/ui/GoalSlider";
 import Flag from "../../components/Flag";
 import { showToast } from "../../components/ui/Toast";
+import { Loader2 } from "lucide-react";
 
 interface PredictionModalProps {
   matchId: string | null;
@@ -61,17 +62,24 @@ export default function PredictionModal({ matchId, onClose }: PredictionModalPro
         <GoalSlider label={match.team2} value={team2Goal} onChange={setTeam2Goal} />
 
         {/* Preview */}
-        <div className="text-center text-2xl font-bold text-gray-800">
-          {team1Goal} : {team2Goal}
+        <div className="text-center py-3 bg-gray-50 rounded-xl">
+          <span className="text-3xl font-bold text-gray-800">{team1Goal} : {team2Goal}</span>
         </div>
 
         {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-3 bg-[var(--color-primary)] text-white rounded-xl font-bold hover:bg-[var(--color-primary-light)] disabled:opacity-50 transition-colors cursor-pointer"
+          className="w-full py-3.5 bg-[var(--color-primary)] text-white rounded-xl font-bold hover:bg-[var(--color-primary-light)] disabled:opacity-50 transition-all cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2"
         >
-          {loading ? "Pateikiama..." : "Pateikti spėjimą"}
+          {loading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Pateikiama...
+            </>
+          ) : (
+            "Pateikti spėjimą"
+          )}
         </button>
       </div>
     </Modal>

@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useAppSelector } from "../../hooks";
 import MatchCard from "./MatchCard";
 import { isMatchStarted } from "../../utils/date";
-import { Loader2 } from "lucide-react";
+import { MatchCardSkeleton } from "../../components/ui/Skeleton";
+import { Calendar, History } from "lucide-react";
 
 interface MatchListProps {
   onPredict: (matchId: string) => void;
@@ -19,8 +20,15 @@ export default function MatchList({ onPredict }: MatchListProps) {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <Loader2 size={32} className="animate-spin text-white" />
+      <div className="flex flex-col gap-8">
+        <section>
+          <div className="h-10 bg-white/10 rounded-xl mb-4 animate-shimmer" />
+          <div className="grid grid-cols-2 max-md:grid-cols-1 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <MatchCardSkeleton key={i} />
+            ))}
+          </div>
+        </section>
       </div>
     );
   }
@@ -29,7 +37,8 @@ export default function MatchList({ onPredict }: MatchListProps) {
     <div className="flex flex-col gap-8">
       {upcoming.length > 0 && (
         <section>
-          <h2 className="text-white text-2xl text-center bg-black/40 rounded-xl py-2 mb-4">
+          <h2 className="text-white text-2xl text-center py-2.5 mb-4 rounded-xl bg-gradient-to-r from-green-600/60 via-green-500/40 to-green-600/60 flex items-center justify-center gap-2 backdrop-blur-sm">
+            <Calendar size={20} />
             Artėjančios varžybos
           </h2>
           <div className="grid grid-cols-2 max-md:grid-cols-1 gap-4">
@@ -42,7 +51,8 @@ export default function MatchList({ onPredict }: MatchListProps) {
 
       {past.length > 0 && (
         <section>
-          <h2 className="text-white text-2xl text-center bg-black/40 rounded-xl py-2 mb-4">
+          <h2 className="text-white text-2xl text-center py-2.5 mb-4 rounded-xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 flex items-center justify-center gap-2 backdrop-blur-sm">
+            <History size={20} />
             Praėjusios varžybos
           </h2>
           <div className="grid grid-cols-2 max-md:grid-cols-1 gap-4">
@@ -54,7 +64,10 @@ export default function MatchList({ onPredict }: MatchListProps) {
       )}
 
       {items.length === 0 && !loading && (
-        <p className="text-white/70 text-center py-8">Varžybų dar nėra.</p>
+        <div className="text-center py-16">
+          <p className="text-white/50 text-lg">Varžybų dar nėra.</p>
+          <p className="text-white/30 text-sm mt-1">Turnyras neturi varžybų</p>
+        </div>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { login, clearError } from "./authSlice";
 import api from "../../api/client";
 import type { Player } from "../../types";
+import { Trophy, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
@@ -33,18 +34,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-primary)]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--color-primary-dark)] via-[var(--color-primary)] to-[var(--color-primary-light)]">
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm flex flex-col gap-6"
+        className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm flex flex-col gap-5 animate-scale-in"
       >
-        <h1 className="text-2xl font-bold text-center text-gray-900">TOTALIZATORIUS</h1>
-        <p className="text-center text-gray-500 text-sm">Pasirinkite savo vardą ir įveskite PIN</p>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+            <Trophy size={28} className="text-[var(--color-primary)]" />
+          </div>
+          <h1 className="text-2xl font-bold text-center text-gray-900">TOTALIZATORIUS</h1>
+          <p className="text-center text-gray-400 text-sm">Pasirinkite savo vardą ir įveskite PIN</p>
+        </div>
 
         {error && (
-          <div className="bg-red-50 text-red-700 px-3 py-2 rounded text-sm text-center">
-            {error}
-            <button type="button" onClick={() => dispatch(clearError())} className="ml-2 underline cursor-pointer">
+          <div className="bg-red-50 text-red-700 px-4 py-2.5 rounded-xl text-sm text-center flex items-center justify-center gap-2">
+            <span>{error}</span>
+            <button type="button" onClick={() => dispatch(clearError())} className="underline cursor-pointer font-medium">
               Gerai
             </button>
           </div>
@@ -56,10 +62,10 @@ export default function LoginPage() {
               key={p.slug}
               type="button"
               onClick={() => setSelectedSlug(p.slug)}
-              className={`py-3 px-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              className={`py-3.5 px-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                 selectedSlug === p.slug
-                  ? "bg-[var(--color-primary)] text-white shadow-lg scale-105"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-[var(--color-primary)] text-white shadow-lg scale-[1.03]"
+                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
               }`}
             >
               {p.name}
@@ -74,15 +80,22 @@ export default function LoginPage() {
           placeholder="PIN kodas"
           value={pin}
           onChange={(e) => setPin(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl text-center text-xl tracking-[12px] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-center text-xl tracking-[12px] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-gray-50 transition-colors focus:bg-white"
         />
 
         <button
           type="submit"
           disabled={loading || !selectedSlug || pin.length < 4}
-          className="w-full py-3 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:bg-[var(--color-primary-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="w-full py-3.5 bg-[var(--color-primary)] text-white rounded-xl font-bold text-lg hover:bg-[var(--color-primary-light)] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-[0.98] flex items-center justify-center gap-2"
         >
-          {loading ? "Jungiamasi..." : "Prisijungti"}
+          {loading ? (
+            <>
+              <Loader2 size={20} className="animate-spin" />
+              Jungiamasi...
+            </>
+          ) : (
+            "Prisijungti"
+          )}
         </button>
       </form>
     </div>

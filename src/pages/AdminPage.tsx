@@ -9,7 +9,7 @@ import Flag from "../components/Flag";
 import { getCountryNames } from "../utils/countries";
 import { isMatchStarted, formatMatchTime } from "../utils/date";
 import { showToast } from "../components/ui/Toast";
-import { Plus, Save, Trophy, Check } from "lucide-react";
+import { Plus, Save, Trophy, Check, X } from "lucide-react";
 
 export default function AdminPage() {
   const dispatch = useAppDispatch();
@@ -278,23 +278,29 @@ export default function AdminPage() {
                         min={0}
                         value={score1}
                         onChange={(e) => setScore1(e.target.value)}
-                        className="w-12 px-2 py-1 border rounded text-center"
+                        className="w-12 px-2 py-1.5 border border-gray-300 rounded-xl text-center text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                         placeholder="0"
                       />
-                      <span>:</span>
+                      <span className="text-gray-400 font-bold">:</span>
                       <input
                         type="number"
                         min={0}
                         value={score2}
                         onChange={(e) => setScore2(e.target.value)}
-                        className="w-12 px-2 py-1 border rounded text-center"
+                        className="w-12 px-2 py-1.5 border border-gray-300 rounded-xl text-center text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                         placeholder="0"
                       />
                       <button
                         onClick={() => handleSetResult(m._id)}
-                        className="p-1 bg-green-600 text-white rounded cursor-pointer"
+                        className="p-1.5 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors"
                       >
-                        <Save size={16} />
+                        <Save size={14} />
+                      </button>
+                      <button
+                        onClick={() => { setEditingMatch(null); setScore1(""); setScore2(""); }}
+                        className="p-1.5 bg-gray-200 text-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
+                      >
+                        <X size={14} />
                       </button>
                     </div>
                   ) : (
