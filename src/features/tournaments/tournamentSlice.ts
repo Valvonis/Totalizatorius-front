@@ -34,7 +34,7 @@ export const fetchAllTournaments = createAsyncThunk(
 
 export const createTournament = createAsyncThunk(
   "tournament/create",
-  async (tournament: { name: string; slug: string; startDate: string; endDate: string; isActive: boolean }) => {
+  async (tournament: { name: string; slug: string; logoUrl?: string; startDate: string; endDate: string; isActive: boolean }) => {
     const { data } = await api.post<Tournament>("/tournaments", tournament);
     return data;
   }
@@ -44,6 +44,14 @@ export const setActiveTournament = createAsyncThunk(
   "tournament/setActive",
   async (id: string) => {
     const { data } = await api.patch<Tournament>(`/tournaments/${id}`, { isActive: true });
+    return data;
+  }
+);
+
+export const updateTournamentLogo = createAsyncThunk(
+  "tournament/updateLogo",
+  async ({ id, logoUrl }: { id: string; logoUrl: string }) => {
+    const { data } = await api.patch<Tournament>(`/tournaments/${id}`, { logoUrl });
     return data;
   }
 );
@@ -86,6 +94,13 @@ const tournamentSlice = createSlice({
         state.all = state.all.map((t) =>
           t._id === action.payload._id ? action.payload : { ...t, isActive: false }
         );
+      })
+      .addCase(updateTournamentLogo.fulfilled, (state, action) => {
+        const updated = action.payload;
+        state.all = state.all.map((t) => (t._id === updated._id ? updated : t));
+        if (state.active?._id === updated._id) {
+          state.active = updated;
+        }
       });
   },
 });

@@ -34,7 +34,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Top row: branding + nav */}
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Link to="/" className="no-underline">
+            <Link to="/" className="no-underline flex items-center gap-2">
+              {tournament?.logoUrl && (
+                <img src={tournament.logoUrl} alt="" className="h-8 w-8 object-contain" />
+              )}
               <h1 className="text-white text-xl max-sm:text-lg font-bold">
                 {tournament?.name ?? "TOTALIZATORIUS"}
               </h1>

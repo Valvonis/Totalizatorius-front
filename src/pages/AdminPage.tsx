@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { createMatch, updateMatch, fetchMatches } from "../features/matches/matchesSlice";
-import { fetchActiveTournament, createTournament, setActiveTournament, fetchAllTournaments } from "../features/tournaments/tournamentSlice";
+import { fetchActiveTournament, createTournament, setActiveTournament, fetchAllTournaments, updateTournamentLogo } from "../features/tournaments/tournamentSlice";
 import { useAuth } from "../features/auth/useAuth";
 import { Navigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -31,8 +31,13 @@ export default function AdminPage() {
   // Tournament creation
   const [tName, setTName] = useState("");
   const [tSlug, setTSlug] = useState("");
+  const [tLogo, setTLogo] = useState("");
   const [tStart, setTStart] = useState("");
   const [tEnd, setTEnd] = useState("");
+
+  // Tournament logo editing
+  const [editingLogo, setEditingLogo] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState("");
 
   useEffect(() => {
     dispatch(fetchActiveTournament());
@@ -79,10 +84,11 @@ export default function AdminPage() {
     if (!tName || !tSlug || !tStart || !tEnd) return;
 
     try {
-      await dispatch(createTournament({ name: tName, slug: tSlug, startDate: tStart, endDate: tEnd, isActive: true })).unwrap();
+      await dispatch(createTournament({ name: tName, slug: tSlug, logoUrl: tLogo || undefined, startDate: tStart, endDate: tEnd, isActive: true })).unwrap();
       showToast("Turnyras sukurtas ir aktyvuotas!", "success");
       setTName("");
       setTSlug("");
+      setTLogo("");
       setTStart("");
       setTEnd("");
     } catch {
@@ -99,6 +105,18 @@ export default function AdminPage() {
     }
   };
 
+  const handleUpdateLogo = async (id: string) => {
+    if (!logoUrl) return;
+    try {
+      await dispatch(updateTournamentLogo({ id, logoUrl })).unwrap();
+      showToast("Logotipas atnaujintas!", "success");
+      setEditingLogo(null);
+      setLogoUrl("");
+    } catch {
+      showToast("Nepavyko atnaujinti logotipo", "error");
+    }
+  };
+
   return (
     <Layout>
       <div className="flex flex-col gap-8">
@@ -112,25 +130,67 @@ export default function AdminPage() {
               {allTournaments.map((t) => (
                 <div
                   key={t._id}
-                  className={`flex items-center justify-between p-3 rounded-xl ${
+                  className={`flex flex-col gap-2 p-3 rounded-xl ${
                     t.isActive ? "bg-green-50 ring-2 ring-green-400" : "bg-gray-50"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <Trophy size={16} className={t.isActive ? "text-green-600" : "text-gray-400"} />
-                    <span className="font-bold text-sm">{t.name}</span>
-                    {t.isActive && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aktyvus</span>
-                    )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {t.logoUrl ? (
+                        <img src={t.logoUrl} alt={t.name} className="h-6 w-6 object-contain" />
+                      ) : (
+                        <Trophy size={16} className={t.isActive ? "text-green-600" : "text-gray-400"} />
+                      )}
+                      <span className="font-bold text-sm">{t.name}</span>
+                      {t.isActive && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aktyvus</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {editingLogo !== t._id && (
+                        <button
+                          onClick={() => { setEditingLogo(t._id); setLogoUrl(t.logoUrl || ""); }}
+                          className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+                        >
+                          {t.logoUrl ? "Keisti logo" : "Pridėti logo"}
+                        </button>
+                      )}
+                      {!t.isActive && (
+                        <button
+                          onClick={() => handleSetActive(t._id)}
+                          className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer"
+                        >
+                          <Check size={14} />
+                          Aktyvuoti
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  {!t.isActive && (
-                    <button
-                      onClick={() => handleSetActive(t._id)}
-                      className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer"
-                    >
-                      <Check size={14} />
-                      Aktyvuoti
-                    </button>
+                  {editingLogo === t._id && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        placeholder="Logo URL (https://...)"
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
+                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                      />
+                      <button
+                        onClick={() => handleUpdateLogo(t._id)}
+                        className="p-1.5 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors"
+                      >
+                        <Save size={14} />
+                      </button>
+                      <button
+                        onClick={() => { setEditingLogo(null); setLogoUrl(""); }}
+                        className="p-1.5 bg-gray-200 text-gray-600 rounded-lg cursor-pointer hover:bg-gray-300 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                      {logoUrl && (
+                        <img src={logoUrl} alt="Preview" className="h-6 w-6 object-contain" />
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
@@ -161,6 +221,13 @@ export default function AdminPage() {
                 required
               />
             </div>
+            <input
+              type="url"
+              placeholder="Logo URL (https://... — neprivaloma)"
+              value={tLogo}
+              onChange={(e) => setTLogo(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            />
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Pradžia</label>
