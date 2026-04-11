@@ -1,0 +1,14 @@
+.match-card {
+  //   margin: auto;
+  text-align: center;
+  border: 3px solid green;
+  padding: 10px;
+  &__span {
+    font-weight: 900;
+  }
+  &__list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+}
