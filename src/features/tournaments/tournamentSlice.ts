@@ -4,12 +4,14 @@ import type { Tournament } from "../../types";
 
 interface TournamentState {
   active: Tournament | null;
+  all: Tournament[];
   loading: boolean;
   error: string | null;
 }
 
 const initialState: TournamentState = {
   active: null,
+  all: [],
   loading: false,
   error: null,
 };
@@ -22,10 +24,38 @@ export const fetchActiveTournament = createAsyncThunk(
   }
 );
 
+export const fetchAllTournaments = createAsyncThunk(
+  "tournament/fetchAll",
+  async () => {
+    const { data } = await api.get<Tournament[]>("/tournaments");
+    return data;
+  }
+);
+
+export const createTournament = createAsyncThunk(
+  "tournament/create",
+  async (tournament: { name: string; slug: string; startDate: string; endDate: string; isActive: boolean }) => {
+    const { data } = await api.post<Tournament>("/tournaments", tournament);
+    return data;
+  }
+);
+
+export const setActiveTournament = createAsyncThunk(
+  "tournament/setActive",
+  async (id: string) => {
+    const { data } = await api.patch<Tournament>(`/tournaments/${id}`, { isActive: true });
+    return data;
+  }
+);
+
 const tournamentSlice = createSlice({
   name: "tournament",
   initialState,
-  reducers: {},
+  reducers: {
+    switchTournament(state, action) {
+      state.active = state.all.find((t) => t._id === action.payload) ?? null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchActiveTournament.pending, (state) => {
@@ -38,8 +68,27 @@ const tournamentSlice = createSlice({
       .addCase(fetchActiveTournament.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch tournament";
+      })
+      .addCase(fetchAllTournaments.fulfilled, (state, action) => {
+        state.all = action.payload;
+      })
+      .addCase(createTournament.fulfilled, (state, action) => {
+        state.all.unshift(action.payload);
+        if (action.payload.isActive) {
+          state.active = action.payload;
+          state.all = state.all.map((t) =>
+            t._id === action.payload._id ? action.payload : { ...t, isActive: false }
+          );
+        }
+      })
+      .addCase(setActiveTournament.fulfilled, (state, action) => {
+        state.active = action.payload;
+        state.all = state.all.map((t) =>
+          t._id === action.payload._id ? action.payload : { ...t, isActive: false }
+        );
       });
   },
 });
 
+export const { switchTournament } = tournamentSlice.actions;
 export default tournamentSlice.reducer;

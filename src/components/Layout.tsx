@@ -1,25 +1,60 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../hooks";
 import { useAuth } from "../features/auth/useAuth";
 import { logout } from "../features/auth/authSlice";
 import { useAppDispatch } from "../hooks";
+import { fetchAllTournaments, switchTournament } from "../features/tournaments/tournamentSlice";
+import { fetchMatches } from "../features/matches/matchesSlice";
+import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
+import { fetchQuestions } from "../features/questions/questionsSlice";
 import Scoreboard from "../features/scoreboard/Scoreboard";
-import { LogOut, Shield, Home } from "lucide-react";
+import { LogOut, Shield, Home, ChevronDown } from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const { player, isAdmin } = useAuth();
   const tournament = useAppSelector((s) => s.tournament.active);
+  const allTournaments = useAppSelector((s) => s.tournament.all);
+
+  useEffect(() => {
+    dispatch(fetchAllTournaments());
+  }, [dispatch]);
+
+  const handleSwitchTournament = (id: string) => {
+    dispatch(switchTournament(id));
+    dispatch(fetchMatches(id));
+    dispatch(fetchLeaderboard(id));
+    dispatch(fetchQuestions(id));
+  };
 
   return (
     <div className="min-h-screen">
       <header className="bg-[var(--color-primary)] border-b border-white/20 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
-          <Link to="/" className="flex items-center gap-3 no-underline">
-            <h1 className="text-white text-xl max-sm:text-lg font-bold tracking-widest">
-              {tournament?.name ?? "TOTALIZATORIUS"}
-            </h1>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-3 no-underline">
+              <h1 className="text-white text-xl max-sm:text-lg font-bold tracking-widest">
+                {tournament?.name ?? "TOTALIZATORIUS"}
+              </h1>
+            </Link>
+            {allTournaments.length > 1 && (
+              <div className="relative">
+                <select
+                  value={tournament?._id ?? ""}
+                  onChange={(e) => handleSwitchTournament(e.target.value)}
+                  className="appearance-none bg-white/10 text-white text-xs border border-white/20 rounded-lg px-2 py-1 pr-6 cursor-pointer focus:outline-none focus:ring-1 focus:ring-white/40"
+                >
+                  {allTournaments.map((t) => (
+                    <option key={t._id} value={t._id} className="text-black">
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none" />
+              </div>
+            )}
+          </div>
 
           <Scoreboard />
 
