@@ -1,5 +1,6 @@
 export interface Player {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   slug: string;
   isAdmin: boolean;
