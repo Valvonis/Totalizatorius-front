@@ -5,7 +5,7 @@ import MatchCard from "./MatchCard";
 import MatchRowCompact from "./MatchRowCompact";
 import { isMatchStarted, isToday, getDateKey, formatDayHeader } from "../../utils/date";
 import { MatchCardSkeleton } from "../../components/ui/Skeleton";
-import { Calendar, History, Flame, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, History, Flame, AlertCircle, ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
 import type { Match } from "../../types";
 
 interface MatchListProps {
@@ -50,6 +50,15 @@ export default function MatchList({ onPredict }: MatchListProps) {
   const { player } = useAuth();
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [showAllPast, setShowAllPast] = useState(false);
+  const [pastView, setPastView] = useState<"compact" | "cards">(() => {
+    return (localStorage.getItem("past-view") as "compact" | "cards") || "compact";
+  });
+
+  const togglePastView = () => {
+    const next = pastView === "compact" ? "cards" : "compact";
+    setPastView(next);
+    localStorage.setItem("past-view", next);
+  };
 
   const { todayMatches, upcoming, pastDays, stages, needsPrediction } = useMemo(() => {
     let filtered = items;
@@ -161,21 +170,40 @@ export default function MatchList({ onPredict }: MatchListProps) {
         </section>
       )}
 
-      {/* Past matches — compact rows grouped by date */}
+      {/* Past matches */}
       {pastDays.length > 0 && (
         <section>
-          <h2 className="text-white text-2xl text-center py-2.5 mb-4 rounded-xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 flex items-center justify-center gap-2 backdrop-blur-sm">
-            <History size={20} />
-            Praėjusios varžybos
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white text-2xl py-2.5 px-4 rounded-xl bg-gradient-to-r from-white/10 via-white/20 to-white/10 flex items-center gap-2 backdrop-blur-sm flex-1 justify-center">
+              <History size={20} />
+              Praėjusios varžybos
+            </h2>
+            <button
+              onClick={togglePastView}
+              className="ml-3 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+              title={pastView === "compact" ? "Rodyti korteles" : "Rodyti kompaktiškai"}
+            >
+              {pastView === "compact" ? <LayoutGrid size={15} /> : <List size={15} />}
+              <span className="max-sm:hidden">{pastView === "compact" ? "Kortelės" : "Kompaktiškai"}</span>
+            </button>
+          </div>
+
           {(showAllPast ? pastDays : pastDays.slice(0, INITIAL_PAST_DAYS)).map((day) => (
-            <div key={day.date} className="mb-3">
-              <h3 className="text-white/50 text-xs font-medium mb-1.5 px-1 capitalize">{day.label}</h3>
-              <div className="flex flex-col gap-1">
-                {day.matches.map((m) => (
-                  <MatchRowCompact key={m._id} match={m} />
-                ))}
-              </div>
+            <div key={day.date} className="mb-4">
+              <h3 className="text-white/50 text-xs font-medium mb-2 px-1 capitalize">{day.label}</h3>
+              {pastView === "compact" ? (
+                <div className="flex flex-col gap-1">
+                  {day.matches.map((m) => (
+                    <MatchRowCompact key={m._id} match={m} />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
+                  {day.matches.map((m) => (
+                    <MatchCard key={m._id} match={m} onPredict={onPredict} />
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           {pastDays.length > INITIAL_PAST_DAYS && (
