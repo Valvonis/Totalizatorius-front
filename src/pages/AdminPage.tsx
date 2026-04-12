@@ -540,6 +540,7 @@ export default function AdminPage() {
                   <option value="Grupė J">Grupė J</option>
                   <option value="Grupė K">Grupė K</option>
                   <option value="Grupė L">Grupė L</option>
+                  <option value="Šešioliktfinalis">Šešioliktfinalis</option>
                   <option value="Aštuntfinalis">Aštuntfinalis</option>
                   <option value="Ketvirtfinalis">Ketvirtfinalis</option>
                   <option value="Pusfinalis">Pusfinalis</option>
@@ -830,7 +831,8 @@ export default function AdminPage() {
                           <option value="Grupė J">Grupė J</option>
                           <option value="Grupė K">Grupė K</option>
                           <option value="Grupė L">Grupė L</option>
-                          <option value="Aštuntfinalis">Aštuntfinalis</option>
+                          <option value="Šešioliktfinalis">Šešioliktfinalis</option>
+                  <option value="Aštuntfinalis">Aštuntfinalis</option>
                           <option value="Ketvirtfinalis">Ketvirtfinalis</option>
                           <option value="Pusfinalis">Pusfinalis</option>
                           <option value="Finalas">Finalas</option>

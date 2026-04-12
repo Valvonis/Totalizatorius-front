@@ -1,7 +1,7 @@
 import Flag from "../../components/Flag";
 import { useAuth } from "../auth/useAuth";
 import { formatMatchTime, timeFromNow, isMatchStarted, getMatchUrgency, getCountdown } from "../../utils/date";
-import { Clock, Check, Timer, Trophy, AlertTriangle } from "lucide-react";
+import { Clock, Check, Timer, Trophy, AlertTriangle, Star, Crown } from "lucide-react";
 import type { Match } from "../../types";
 
 interface MatchCardProps {
@@ -33,6 +33,83 @@ function pointsBg(pts: number | null): string {
   return "";
 }
 
+type StageStyle = {
+  border: string;
+  glow: string;
+  badge: string;
+  scoreSize: string;
+  icon: React.ReactNode | null;
+};
+
+function getStageStyle(stage: string): StageStyle {
+  if (stage === "Finalas") {
+    return {
+      border: "ring-2 ring-yellow-400 border-yellow-400/50",
+      glow: "shadow-[0_0_20px_rgba(250,204,21,0.15)]",
+      badge: "bg-yellow-400 text-yellow-900",
+      scoreSize: "text-5xl",
+      icon: <Crown size={16} className="text-yellow-400" />,
+    };
+  }
+  if (stage === "Pusfinalis") {
+    return {
+      border: "ring-2 ring-yellow-400/60 border-yellow-400/30",
+      glow: "shadow-[0_0_12px_rgba(250,204,21,0.1)]",
+      badge: "bg-yellow-400/80 text-yellow-900",
+      scoreSize: "text-5xl",
+      icon: <Star size={14} className="text-yellow-400" />,
+    };
+  }
+  if (stage === "3 vietos rungtynės") {
+    return {
+      border: "ring-1 ring-amber-600/40 border-amber-600/20",
+      glow: "",
+      badge: "bg-amber-600/80 text-white",
+      scoreSize: "text-4xl",
+      icon: null,
+    };
+  }
+  if (stage === "Ketvirtfinalis") {
+    return {
+      border: "ring-1 ring-yellow-500/40 border-yellow-500/20",
+      glow: "",
+      badge: "bg-yellow-500/20 text-yellow-600",
+      scoreSize: "text-4xl",
+      icon: null,
+    };
+  }
+  if (stage === "Aštuntfinalis") {
+    return {
+      border: "border-l-4 border-l-indigo-400 border-[var(--card-border)]",
+      glow: "",
+      badge: "bg-indigo-500/15 text-indigo-500",
+      scoreSize: "text-4xl",
+      icon: null,
+    };
+  }
+  if (stage === "Šešioliktfinalis") {
+    return {
+      border: "border-l-[3px] border-l-blue-400 border-[var(--card-border)]",
+      glow: "",
+      badge: "bg-blue-500/15 text-blue-500",
+      scoreSize: "text-4xl",
+      icon: null,
+    };
+  }
+  // Group stage — default
+  return {
+    border: "border border-[var(--card-border)]",
+    glow: "",
+    badge: "bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]",
+    scoreSize: "text-4xl",
+    icon: null,
+  };
+}
+
+function isKnockout(stage: string): boolean {
+  return ["Šešioliktfinalis", "Aštuntfinalis", "Ketvirtfinalis", "Pusfinalis", "3 vietos rungtynės", "Finalas"].includes(stage);
+}
+
 export default function MatchCard({ match, onPredict }: MatchCardProps) {
   const { player } = useAuth();
   const started = isMatchStarted(match.time);
@@ -40,9 +117,14 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
     (p) => p.playerId === player?.id
   );
   const canPredict = !started && !currentPlayerPredicted;
+  const stageStyle = getStageStyle(match.stage || "");
+  const knockout = isKnockout(match.stage || "");
 
   return (
-    <div className="rounded-2xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-fade-up border border-[var(--card-border)]" style={{ background: "var(--card-bg)" }}>
+    <div
+      className={`rounded-2xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-fade-up ${stageStyle.border} ${stageStyle.glow}`}
+      style={{ background: "var(--card-bg)" }}
+    >
       {/* Time header */}
       {(() => {
         const urgency = getMatchUrgency(match.time);
@@ -64,7 +146,8 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
                 <span>{timeFromNow(match.time)}</span>
               )}
               {match.stage && (
-                <span className="text-[10px] font-medium bg-[var(--color-primary)]/20 text-[var(--color-primary-light)] px-1.5 py-0.5 rounded">
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ${stageStyle.badge}`}>
+                  {stageStyle.icon}
                   {match.stage}
                 </span>
               )}
@@ -78,20 +161,20 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
       })()}
 
       {/* Teams & Score */}
-      <div className="flex items-center justify-center gap-6 py-6 px-4">
+      <div className={`flex items-center justify-center gap-6 px-4 ${knockout ? "py-8" : "py-6"}`}>
         <div className="flex flex-col items-center gap-1.5 w-20">
-          <Flag countryName={match.team1} />
+          <Flag countryName={match.team1} size={knockout ? 56 : 48} />
           <span className="text-xs text-center leading-tight font-medium text-[var(--card-text-secondary)]">{match.team1}</span>
         </div>
         <div className="min-w-[60px] text-center">
           {match.team1Score !== null ? (
-            <span className="text-4xl font-bold text-[var(--card-text)]">{match.team1Score}-{match.team2Score}</span>
+            <span className={`${stageStyle.scoreSize} font-bold text-[var(--card-text)]`}>{match.team1Score}-{match.team2Score}</span>
           ) : (
             <span className="text-lg text-[var(--card-text-muted)] italic font-medium">vs</span>
           )}
         </div>
         <div className="flex flex-col items-center gap-1.5 w-20">
-          <Flag countryName={match.team2} />
+          <Flag countryName={match.team2} size={knockout ? 56 : 48} />
           <span className="text-xs text-center leading-tight font-medium text-[var(--card-text-secondary)]">{match.team2}</span>
         </div>
       </div>
