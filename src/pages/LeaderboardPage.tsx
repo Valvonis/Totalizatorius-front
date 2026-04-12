@@ -64,8 +64,8 @@ export default function LeaderboardPage() {
             return (
               <div
                 key={entry.playerId}
-                className={`bg-white rounded-2xl shadow-md overflow-hidden animate-fade-up ${style ? style.border : ""}`}
-                style={{ animationDelay: `${i * 80}ms`, animationFillMode: "backwards" }}
+                className={`rounded-2xl shadow-md overflow-hidden animate-fade-up border border-[var(--card-border)] ${style ? style.border : ""}`}
+                style={{ background: "var(--card-bg)", animationDelay: `${i * 80}ms`, animationFillMode: "backwards" }}
               >
                 {/* Header row */}
                 <div className={`flex items-center gap-3 px-5 py-4 ${style?.bg ?? "bg-white"}`}>
@@ -73,12 +73,12 @@ export default function LeaderboardPage() {
                     {style ? (
                       style.icon
                     ) : (
-                      <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-500">
+                      <span className="w-8 h-8 rounded-full bg-[var(--card-surface)] flex items-center justify-center text-sm font-bold text-gray-500">
                         {i + 1}
                       </span>
                     )}
                     <div>
-                      <Link to={`/player/${entry.playerSlug}`} className="font-bold text-lg text-gray-900 no-underline hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
+                      <Link to={`/player/${entry.playerSlug}`} className="font-bold text-lg text-[var(--card-text)] no-underline hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
                         {entry.playerName}
                         <ChevronRight size={16} className="text-gray-300" />
                       </Link>
@@ -90,29 +90,29 @@ export default function LeaderboardPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{entry.totalPoints}</div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-wide">taškai</div>
+                    <div className="text-3xl font-bold text-[var(--card-text)]">{entry.totalPoints}</div>
+                    <div className="text-[10px] text-[var(--card-text-muted)] uppercase tracking-wide">taškai</div>
                   </div>
                 </div>
 
                 {/* Stats grid */}
-                <div className="grid grid-cols-2 border-t border-gray-100">
+                <div className="grid grid-cols-2 border-t border-[var(--card-border)]">
                   {/* Points breakdown */}
-                  <div className="px-5 py-3 border-r border-gray-100">
-                    <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Taškų šaltiniai</div>
+                  <div className="px-5 py-3 border-r border-[var(--card-border)]">
+                    <div className="text-[10px] text-[var(--card-text-muted)] uppercase tracking-wide mb-2">Taškų šaltiniai</div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Varžybos</span>
-                      <span className="font-bold text-gray-800">{entry.matchPoints}</span>
+                      <span className="text-[var(--card-text-secondary)]">Varžybos</span>
+                      <span className="font-bold text-[var(--card-text)]">{entry.matchPoints}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Klausimai</span>
-                      <span className="font-bold text-gray-800">{entry.questionPoints}</span>
+                      <span className="text-[var(--card-text-secondary)]">Klausimai</span>
+                      <span className="font-bold text-[var(--card-text)]">{entry.questionPoints}</span>
                     </div>
                   </div>
 
                   {/* Prediction stats */}
                   <div className="px-5 py-3">
-                    <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Spėjimai ({entry.totalPredictions}/{entry.totalMatches})</div>
+                    <div className="text-[10px] text-[var(--card-text-muted)] uppercase tracking-wide mb-2">Spėjimai ({entry.totalPredictions}/{entry.totalMatches})</div>
                     <div className="flex gap-3 text-xs">
                       <span className="flex items-center gap-1 text-green-600" title="Tikslūs rezultatai">
                         <Target size={12} />
@@ -136,8 +136,8 @@ export default function LeaderboardPage() {
 
                 {/* Accuracy bar */}
                 {entry.totalPredictions > 0 && (
-                  <div className="px-5 py-2 border-t border-gray-100 bg-gray-50/50">
-                    <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
+                  <div className="px-5 py-2 border-t border-[var(--card-border)] bg-gray-50/50">
+                    <div className="flex items-center justify-between text-[10px] text-[var(--card-text-muted)] mb-1">
                       <span>Tikslumas</span>
                       <span>{accuracy}%</span>
                     </div>

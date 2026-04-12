@@ -98,44 +98,44 @@ export default function PlayerHistoryPage() {
 
         {/* Player header */}
         {playerEntry && (
-          <div className="bg-white rounded-2xl shadow-md p-6 animate-fade-up">
+          <div className="rounded-2xl shadow-md border border-[var(--card-border)] p-6 animate-fade-up" style={{ background: "var(--card-bg)" }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">{playerEntry.playerName}</h2>
+              <h2 className="text-2xl font-bold text-[var(--card-text)]">{playerEntry.playerName}</h2>
               <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900">{playerEntry.totalPoints}</div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-wide">taškai</div>
+                <div className="text-3xl font-bold text-[var(--card-text)]">{playerEntry.totalPoints}</div>
+                <div className="text-[10px] text-[var(--card-text-muted)] uppercase tracking-wide">taškai</div>
               </div>
             </div>
 
             {/* Stats row */}
             <div className="grid grid-cols-4 gap-3">
-              <div className="bg-gray-50 rounded-xl p-3 text-center">
-                <div className="text-lg font-bold text-gray-800">{playerEntry.exactScores}</div>
-                <div className="text-[10px] text-gray-400 flex items-center justify-center gap-1">
+              <div className="rounded-xl p-3 text-center" style={{ background: "var(--card-surface)" }}>
+                <div className="text-lg font-bold text-[var(--card-text)]">{playerEntry.exactScores}</div>
+                <div className="text-[10px] text-[var(--card-text-muted)] flex items-center justify-center gap-1">
                   <Target size={10} />
                   Tikslūs
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center">
-                <div className="text-lg font-bold text-gray-800">{playerEntry.correctDifferences}</div>
-                <div className="text-[10px] text-gray-400 flex items-center justify-center gap-1">
+              <div className="rounded-xl p-3 text-center" style={{ background: "var(--card-surface)" }}>
+                <div className="text-lg font-bold text-[var(--card-text)]">{playerEntry.correctDifferences}</div>
+                <div className="text-[10px] text-[var(--card-text-muted)] flex items-center justify-center gap-1">
                   <TrendingUp size={10} />
                   Skirtumai
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center">
-                <div className="text-lg font-bold text-gray-800">{avgPoints}</div>
-                <div className="text-[10px] text-gray-400 flex items-center justify-center gap-1">
+              <div className="rounded-xl p-3 text-center" style={{ background: "var(--card-surface)" }}>
+                <div className="text-lg font-bold text-[var(--card-text)]">{avgPoints}</div>
+                <div className="text-[10px] text-[var(--card-text-muted)] flex items-center justify-center gap-1">
                   <Award size={10} />
                   Vid. taškai
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3 text-center">
-                <div className="text-lg font-bold text-gray-800 flex items-center justify-center gap-1">
+              <div className="rounded-xl p-3 text-center" style={{ background: "var(--card-surface)" }}>
+                <div className="text-lg font-bold text-[var(--card-text)] flex items-center justify-center gap-1">
                   {currentStreak > 0 && <Flame size={16} className="text-orange-500" />}
                   {currentStreak}
                 </div>
-                <div className="text-[10px] text-gray-400 flex items-center justify-center gap-1">
+                <div className="text-[10px] text-[var(--card-text-muted)] flex items-center justify-center gap-1">
                   Serija
                 </div>
               </div>
@@ -154,28 +154,28 @@ export default function PlayerHistoryPage() {
         )}
 
         {/* Prediction history */}
-        <div className="bg-white rounded-2xl shadow-md overflow-hidden animate-fade-up">
-          <div className="px-5 py-3 border-b border-gray-100">
-            <h3 className="font-bold text-gray-800 text-sm">Spėjimų istorija ({playerMatches.length})</h3>
+        <div className="rounded-2xl shadow-md border border-[var(--card-border)] overflow-hidden animate-fade-up" style={{ background: "var(--card-bg)" }}>
+          <div className="px-5 py-3 border-b border-[var(--card-border)]">
+            <h3 className="font-bold text-[var(--card-text)] text-sm">Spėjimų istorija ({playerMatches.length})</h3>
           </div>
 
           {playerMatches.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-8">Dar nėra įvertintų spėjimų.</p>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-[var(--card-border)]">
               {[...playerMatches].reverse().map(({ match, prediction }) => (
                 <div key={match._id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/50 transition-colors">
                   {/* Teams */}
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     <Flag countryName={match.team1} size={20} />
-                    <span className="text-xs text-gray-600 truncate">{match.team1}</span>
+                    <span className="text-xs text-[var(--card-text-secondary)] truncate">{match.team1}</span>
                     <span className="text-gray-300 text-xs">vs</span>
-                    <span className="text-xs text-gray-600 truncate">{match.team2}</span>
+                    <span className="text-xs text-[var(--card-text-secondary)] truncate">{match.team2}</span>
                     <Flag countryName={match.team2} size={20} />
                   </div>
 
                   {/* Actual score */}
-                  <div className="text-sm font-bold text-gray-800 min-w-[40px] text-center">
+                  <div className="text-sm font-bold text-[var(--card-text)] min-w-[40px] text-center">
                     {match.team1Score}-{match.team2Score}
                   </div>
 

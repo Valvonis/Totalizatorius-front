@@ -51,9 +51,9 @@ export default function QuestionCard({ question }: QuestionCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-4 animate-fade-up">
+    <div className="rounded-2xl shadow-md p-5 flex flex-col gap-4 animate-fade-up border border-[var(--card-border)]" style={{ background: "var(--card-bg)" }}>
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-bold text-gray-900 text-sm">{question.question}</h3>
+        <h3 className="font-bold text-[var(--card-text)] text-sm">{question.question}</h3>
         <span className="text-xs font-bold text-[var(--color-accent)] bg-yellow-50 px-2.5 py-1 rounded-full shrink-0">
           +{question.pointValue}
         </span>
@@ -91,18 +91,17 @@ export default function QuestionCard({ question }: QuestionCardProps) {
                 key={a._id}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-xl text-center transition-all ${
                   correct
-                    ? "bg-green-50 ring-2 ring-green-400"
-                    : wrong
-                      ? "bg-gray-50"
-                      : "bg-gray-50"
+                    ? "bg-green-500/15 ring-2 ring-green-400"
+                    : ""
                 }`}
+                style={{ background: correct ? undefined : "var(--card-surface)" }}
               >
-                <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{a.playerId.name}</span>
+                <span className="text-[10px] text-[var(--card-text-muted)] font-medium uppercase tracking-wide">{a.playerId.name}</span>
 
                 {question.type === "country" ? (
                   <>
                     <Flag countryName={a.answer} size={36} />
-                    <span className={`text-xs font-medium ${wrong ? "text-gray-400 line-through" : "text-gray-700"}`}>
+                    <span className={`text-xs font-medium ${wrong ? "text-[var(--card-text-muted)] line-through" : "text-[var(--card-text-secondary)]"}`}>
                       {a.answer}
                     </span>
                   </>
@@ -115,7 +114,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
                         className={`w-12 h-12 rounded-full object-cover ${wrong ? "opacity-40 grayscale" : ""}`}
                       />
                     ) : null}
-                    <span className={`text-sm font-bold ${wrong ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                    <span className={`text-sm font-bold ${wrong ? "text-[var(--card-text-muted)] line-through" : "text-[var(--card-text)]"}`}>
                       {a.answer}
                     </span>
                     {a.additionalData?.goals !== undefined && (
@@ -145,12 +144,13 @@ export default function QuestionCard({ question }: QuestionCardProps) {
 
       {/* Answer form for current user */}
       {canAnswer && (
-        <div className="border-t border-gray-100 pt-3 flex items-center gap-2">
+        <div className="border-t border-[var(--card-border)] pt-3 flex items-center gap-2">
           {question.type === "country" ? (
             <select
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-gray-50"
+              className="flex-1 px-3 py-2 border border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--card-text)]"
+              style={{ background: "var(--card-surface)" }}
             >
               <option value="">Pasirinkite šalį...</option>
               {countries.map((c) => (
@@ -163,7 +163,8 @@ export default function QuestionCard({ question }: QuestionCardProps) {
               placeholder="Įveskite žaidėjo vardą..."
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-gray-50"
+              className="flex-1 px-3 py-2 border border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--card-text)]"
+              style={{ background: "var(--card-surface)" }}
             />
           )}
           <button
@@ -178,7 +179,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
 
       {/* Already answered indicator */}
       {currentPlayerAnswered && !question.isResolved && (
-        <div className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
+        <div className="text-center text-xs text-[var(--card-text-muted)] flex items-center justify-center gap-1">
           <Check size={13} />
           Jūs jau atsakėte
         </div>

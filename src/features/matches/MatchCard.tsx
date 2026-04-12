@@ -10,7 +10,7 @@ interface MatchCardProps {
 }
 
 function pointsColor(pts: number | null): string {
-  if (pts === null) return "text-gray-400";
+  if (pts === null) return "text-[var(--card-text-muted)]";
   if (pts === 5) return "text-[var(--color-points-5)]";
   if (pts === 3) return "text-[var(--color-points-3)]";
   if (pts === 1) return "text-[var(--color-points-1)]";
@@ -27,9 +27,9 @@ function pointsLabel(pts: number | null): string {
 
 function pointsBg(pts: number | null): string {
   if (pts === null) return "";
-  if (pts === 5) return "bg-green-50";
-  if (pts === 3) return "bg-blue-50";
-  if (pts === 1) return "bg-orange-50";
+  if (pts === 5) return "bg-green-500/10";
+  if (pts === 3) return "bg-blue-500/10";
+  if (pts === 1) return "bg-orange-500/10";
   return "";
 }
 
@@ -42,18 +42,18 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
   const canPredict = !started && !currentPlayerPredicted;
 
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-fade-up">
+    <div className="rounded-2xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-fade-up border border-[var(--card-border)]" style={{ background: "var(--card-bg)" }}>
       {/* Time header */}
       {(() => {
         const urgency = getMatchUrgency(match.time);
         const urgencyStyles = {
-          plenty: "bg-gray-50/80 text-gray-400 border-gray-100",
-          soon: "bg-amber-50 text-amber-600 border-amber-100",
-          urgent: "bg-red-50 text-red-600 border-red-100",
-          started: "bg-gray-50/80 text-gray-400 border-gray-100",
+          plenty: "text-[var(--card-text-muted)]",
+          soon: "bg-amber-500/10 text-amber-500",
+          urgent: "bg-red-500/10 text-red-500",
+          started: "text-[var(--card-text-muted)]",
         };
         return (
-          <div className={`flex justify-between items-center px-4 py-2.5 text-xs border-b ${urgencyStyles[urgency]}`}>
+          <div className={`flex justify-between items-center px-4 py-2.5 text-xs border-b border-[var(--card-border)] ${urgencyStyles[urgency]}`} style={{ background: "var(--card-surface)" }}>
             <div className="flex items-center gap-2">
               {!started ? (
                 <span className="flex items-center gap-1 font-medium">
@@ -64,12 +64,12 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
                 <span>{timeFromNow(match.time)}</span>
               )}
               {match.stage && (
-                <span className="text-[10px] font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-medium bg-[var(--color-primary)]/20 text-[var(--color-primary-light)] px-1.5 py-0.5 rounded">
                   {match.stage}
                 </span>
               )}
             </div>
-            <span className="flex items-center gap-1 text-gray-400">
+            <span className="flex items-center gap-1 text-[var(--card-text-muted)]">
               <Clock size={13} />
               {formatMatchTime(match.time)}
             </span>
@@ -81,18 +81,18 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
       <div className="flex items-center justify-center gap-6 py-6 px-4">
         <div className="flex flex-col items-center gap-1.5 w-20">
           <Flag countryName={match.team1} />
-          <span className="text-xs text-center text-gray-600 leading-tight font-medium">{match.team1}</span>
+          <span className="text-xs text-center leading-tight font-medium text-[var(--card-text-secondary)]">{match.team1}</span>
         </div>
         <div className="min-w-[60px] text-center">
           {match.team1Score !== null ? (
-            <span className="text-4xl font-bold text-gray-900">{match.team1Score}-{match.team2Score}</span>
+            <span className="text-4xl font-bold text-[var(--card-text)]">{match.team1Score}-{match.team2Score}</span>
           ) : (
-            <span className="text-lg text-gray-300 italic font-medium">vs</span>
+            <span className="text-lg text-[var(--card-text-muted)] italic font-medium">vs</span>
           )}
         </div>
         <div className="flex flex-col items-center gap-1.5 w-20">
           <Flag countryName={match.team2} />
-          <span className="text-xs text-center text-gray-600 leading-tight font-medium">{match.team2}</span>
+          <span className="text-xs text-center leading-tight font-medium text-[var(--card-text-secondary)]">{match.team2}</span>
         </div>
       </div>
 
@@ -101,10 +101,10 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
         <div className="grid grid-cols-3 gap-2 text-center">
           {match.predictions.map((pred) => (
             <div key={pred.id} className={`flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg ${started ? pointsBg(pred.points) : ""}`}>
-              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">{pred.playerName}</span>
+              <span className="text-[10px] text-[var(--card-text-muted)] font-medium uppercase tracking-wide">{pred.playerName}</span>
               {started ? (
                 <>
-                  <span className="font-bold text-sm text-gray-800">
+                  <span className="font-bold text-sm text-[var(--card-text)]">
                     {pred.team1Goal}:{pred.team2Goal}
                   </span>
                   <span className={`text-xs font-bold ${pointsColor(pred.points)}`} title={pointsLabel(pred.points)}>
@@ -118,12 +118,12 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
               )}
             </div>
           ))}
-          {/* Waiting slots — friendly indicator instead of red X */}
+          {/* Waiting slots */}
           {!started &&
             Array.from({ length: Math.max(0, 3 - match.predictions.length) }).map((_, i) => (
               <div key={`empty-${i}`} className="flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg">
-                <span className="text-[10px] text-gray-300 font-medium">---</span>
-                <span className="text-gray-300 animate-pulse-soft">
+                <span className="text-[10px] text-[var(--card-text-muted)] font-medium">---</span>
+                <span className="text-[var(--card-text-muted)] animate-pulse-soft">
                   <Timer size={15} />
                 </span>
               </div>
@@ -132,7 +132,7 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
       </div>
 
       {/* Predict button */}
-      <div className="mt-auto border-t border-gray-100">
+      <div className="mt-auto border-t border-[var(--card-border)]">
         {canPredict ? (
           <button
             onClick={() => onPredict(match._id)}
@@ -142,7 +142,7 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
             <span>SPĖTI</span>
           </button>
         ) : (
-          <div className="w-full py-3 flex items-center justify-center gap-2 text-gray-300 font-medium text-sm">
+          <div className="w-full py-3 flex items-center justify-center gap-2 text-[var(--card-text-muted)] font-medium text-sm">
             {started ? (
               <span>Varžybos prasidėjo</span>
             ) : currentPlayerPredicted ? (
