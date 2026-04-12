@@ -48,4 +48,13 @@ export function getCountdown(time: string): string {
   return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
 }
 
+/**
+ * Converts a datetime-local input value (e.g. "2026-06-11T19:00")
+ * to a proper ISO string with timezone, so the backend stores it as UTC correctly.
+ * The browser's local timezone is used automatically.
+ */
+export function localTimeToISO(datetimeLocal: string): string {
+  return new Date(datetimeLocal).toISOString();
+}
+
 export { dayjs };

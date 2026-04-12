@@ -8,7 +8,7 @@ import { Navigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Flag from "../components/Flag";
 import { getCountryNames } from "../utils/countries";
-import { isMatchStarted, formatMatchTime } from "../utils/date";
+import { isMatchStarted, formatMatchTime, localTimeToISO } from "../utils/date";
 import { showToast } from "../components/ui/Toast";
 import { Plus, Save, Trophy, Check, X, HelpCircle, Award, Users, Shield, ShieldOff, KeyRound, Trash2, Pencil } from "lucide-react";
 import api from "../api/client";
@@ -102,7 +102,7 @@ export default function AdminPage() {
     }
 
     try {
-      await dispatch(createMatch({ tournamentId: tournament._id, team1, team2, time, stage: stage || undefined })).unwrap();
+      await dispatch(createMatch({ tournamentId: tournament._id, team1, team2, time: localTimeToISO(time), stage: stage || undefined })).unwrap();
       showToast("Varžybos sukurtos!", "success");
       setTeam1("");
       setTeam2("");
@@ -144,7 +144,7 @@ export default function AdminPage() {
     }
 
     try {
-      await dispatch(updateMatch({ id: matchId, team1: editTeam1, team2: editTeam2, time: editTime, stage: editStage || undefined })).unwrap();
+      await dispatch(updateMatch({ id: matchId, team1: editTeam1, team2: editTeam2, time: localTimeToISO(editTime), stage: editStage || undefined })).unwrap();
       showToast("Varžybos atnaujintos!", "success");
       setEditingMatchDetails(null);
     } catch {
