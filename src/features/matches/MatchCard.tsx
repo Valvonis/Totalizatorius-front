@@ -45,7 +45,14 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
     <div className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-fade-up">
       {/* Time header */}
       <div className="flex justify-between items-center px-4 py-2.5 text-gray-400 text-xs bg-gray-50/80 border-b border-gray-100">
-        <span>{timeFromNow(match.time)}</span>
+        <div className="flex items-center gap-2">
+          <span>{timeFromNow(match.time)}</span>
+          {match.stage && (
+            <span className="text-[10px] font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-1.5 py-0.5 rounded">
+              {match.stage}
+            </span>
+          )}
+        </div>
         <span className="flex items-center gap-1">
           <Clock size={13} />
           {formatMatchTime(match.time)}

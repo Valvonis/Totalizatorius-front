@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
   const [time, setTime] = useState("");
+  const [stage, setStage] = useState("");
 
   // Result editing
   const [editingMatch, setEditingMatch] = useState<string | null>(null);
@@ -90,11 +91,12 @@ export default function AdminPage() {
     if (!team1 || !team2 || !time || !tournament) return;
 
     try {
-      await dispatch(createMatch({ tournamentId: tournament._id, team1, team2, time })).unwrap();
+      await dispatch(createMatch({ tournamentId: tournament._id, team1, team2, time, stage: stage || undefined })).unwrap();
       showToast("Varžybos sukurtos!", "success");
       setTeam1("");
       setTeam2("");
       setTime("");
+      setStage("");
     } catch {
       showToast("Nepavyko sukurti varžybų", "error");
     }
@@ -431,15 +433,44 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Laikas</label>
-              <input
-                type="datetime-local"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                required
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Laikas</label>
+                <input
+                  type="datetime-local"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Etapas (neprivaloma)</label>
+                <select
+                  value={stage}
+                  onChange={(e) => setStage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                >
+                  <option value="">Nepasirinkta</option>
+                  <option value="Grupė A">Grupė A</option>
+                  <option value="Grupė B">Grupė B</option>
+                  <option value="Grupė C">Grupė C</option>
+                  <option value="Grupė D">Grupė D</option>
+                  <option value="Grupė E">Grupė E</option>
+                  <option value="Grupė F">Grupė F</option>
+                  <option value="Grupė G">Grupė G</option>
+                  <option value="Grupė H">Grupė H</option>
+                  <option value="Grupė I">Grupė I</option>
+                  <option value="Grupė J">Grupė J</option>
+                  <option value="Grupė K">Grupė K</option>
+                  <option value="Grupė L">Grupė L</option>
+                  <option value="Aštuntfinalis">Aštuntfinalis</option>
+                  <option value="Ketvirtfinalis">Ketvirtfinalis</option>
+                  <option value="Pusfinalis">Pusfinalis</option>
+                  <option value="Finalas">Finalas</option>
+                  <option value="3 vietos rungtynės">3 vietos rungtynės</option>
+                </select>
+              </div>
             </div>
 
             <button
