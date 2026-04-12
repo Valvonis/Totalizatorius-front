@@ -48,7 +48,7 @@ function getStageStyle(stage: string): StageStyle {
       glow: "shadow-[0_0_20px_rgba(250,204,21,0.15)]",
       badge: "bg-yellow-400 text-yellow-900",
       scoreSize: "text-5xl",
-      icon: <Crown size={16} className="text-yellow-400" />,
+      icon: <Crown size={16} className="text-yellow-900" />,
     };
   }
   if (stage === "Pusfinalis") {
@@ -57,7 +57,7 @@ function getStageStyle(stage: string): StageStyle {
       glow: "shadow-[0_0_12px_rgba(250,204,21,0.1)]",
       badge: "bg-yellow-400/80 text-yellow-900",
       scoreSize: "text-5xl",
-      icon: <Star size={14} className="text-yellow-400" />,
+      icon: <Star size={14} className="text-yellow-900" />,
     };
   }
   if (stage === "3 vietos rungtynės") {
