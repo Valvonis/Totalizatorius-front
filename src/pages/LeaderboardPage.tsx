@@ -3,7 +3,8 @@ import { useAppDispatch, useAppSelector } from "../hooks";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchActiveTournament } from "../features/tournaments/tournamentSlice";
 import Layout from "../components/Layout";
-import { Trophy, Medal, Target, TrendingUp, XCircle, BarChart3 } from "lucide-react";
+import { Trophy, Medal, Target, TrendingUp, XCircle, BarChart3, Calendar } from "lucide-react";
+import { dayjs } from "../utils/date";
 
 const rankStyles = [
   { bg: "bg-gradient-to-r from-yellow-50 to-yellow-100/50", border: "ring-2 ring-yellow-400", icon: <Trophy size={24} className="text-yellow-500" />, label: "bg-yellow-400 text-yellow-900" },
@@ -27,10 +28,18 @@ export default function LeaderboardPage() {
   return (
     <Layout>
       <div className="flex flex-col gap-6 max-w-3xl mx-auto">
-        <h2 className="text-white text-2xl text-center py-2.5 rounded-xl bg-gradient-to-r from-yellow-600/40 via-yellow-500/30 to-yellow-600/40 flex items-center justify-center gap-2 backdrop-blur-sm">
-          <BarChart3 size={22} />
-          Turnyro lentelė
-        </h2>
+        <div className="text-center py-3 rounded-xl bg-gradient-to-r from-yellow-600/40 via-yellow-500/30 to-yellow-600/40 backdrop-blur-sm">
+          <h2 className="text-white text-2xl flex items-center justify-center gap-2">
+            <BarChart3 size={22} />
+            Turnyro lentelė
+          </h2>
+          {tournament && (
+            <div className="flex items-center justify-center gap-1.5 text-white/40 text-xs mt-1">
+              <Calendar size={12} />
+              <span>{tournament.name} · {dayjs(tournament.startDate).format("YYYY.MM.DD")} – {dayjs(tournament.endDate).format("MM.DD")}</span>
+            </div>
+          )}
+        </div>
 
         {loading && (
           <div className="flex flex-col gap-4">

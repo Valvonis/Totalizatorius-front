@@ -10,6 +10,7 @@ import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchQuestions } from "../features/questions/questionsSlice";
 import Scoreboard from "../features/scoreboard/Scoreboard";
 import { LogOut, Shield, Home, ChevronDown, Sun, Moon, BarChart3, KeyRound, Save, Loader2 } from "lucide-react";
+import { dayjs } from "../utils/date";
 import api from "../api/client";
 import { showToast } from "./ui/Toast";
 
@@ -78,9 +79,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {tournament?.logoUrl && (
                 <img src={tournament.logoUrl} alt="" className="h-10 w-10 object-contain" />
               )}
-              <h1 className="text-white text-xl max-sm:text-lg font-bold">
-                {tournament?.name ?? "TOTALIZATORIUS"}
-              </h1>
+              <div>
+                <h1 className="text-white text-xl max-sm:text-lg font-bold leading-tight">
+                  {tournament?.name ?? "TOTALIZATORIUS"}
+                </h1>
+                {tournament?.startDate && (
+                  <span className="text-white/40 text-[10px] font-medium">
+                    {dayjs(tournament.startDate).format("YYYY.MM.DD")} – {dayjs(tournament.endDate).format("MM.DD")}
+                  </span>
+                )}
+              </div>
             </Link>
             {allTournaments.length > 1 && (
               <div className="relative max-sm:hidden">
