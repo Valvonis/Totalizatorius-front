@@ -9,7 +9,9 @@ import { fetchMatches } from "../features/matches/matchesSlice";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchQuestions } from "../features/questions/questionsSlice";
 import Scoreboard from "../features/scoreboard/Scoreboard";
-import { LogOut, Shield, Home, ChevronDown, Sun, Moon, BarChart3 } from "lucide-react";
+import { LogOut, Shield, Home, ChevronDown, Sun, Moon, BarChart3, KeyRound, Save, Loader2 } from "lucide-react";
+import api from "../api/client";
+import { showToast } from "./ui/Toast";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -21,6 +23,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (localStorage.getItem("bg-theme") as "stadium" | "gradient") || "stadium";
   });
 
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showPinChange, setShowPinChange] = useState(false);
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [pinLoading, setPinLoading] = useState(false);
+
   useEffect(() => {
     document.body.classList.remove("theme-stadium", "theme-gradient");
     document.body.classList.add(`theme-${theme}`);
@@ -30,6 +38,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === "stadium" ? "gradient" : "stadium"));
   }, []);
+
+  const handleChangePin = async () => {
+    if (!currentPin || newPin.length < 4) return;
+    setPinLoading(true);
+    try {
+      await api.patch("/auth/pin", { currentPin, newPin });
+      showToast("PIN sėkmingai pakeistas!", "success");
+      setShowPinChange(false);
+      setShowUserMenu(false);
+      setCurrentPin("");
+      setNewPin("");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      showToast(error.response?.data?.message || "Nepavyko pakeisti PIN", "error");
+    } finally {
+      setPinLoading(false);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchAllTournaments());
@@ -101,13 +127,83 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </button>
             </nav>
             {player && (
-              <button
-                onClick={() => dispatch(logout())}
-                className="flex items-center gap-1.5 text-white/70 hover:text-white text-xs transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-white/10"
-              >
-                <LogOut size={16} />
-                <span className="max-sm:hidden">{player.name}</span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-1.5 text-white/70 hover:text-white text-xs transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-white/10"
+                >
+                  <span className="max-sm:hidden">{player.name}</span>
+                  <ChevronDown size={12} />
+                </button>
+
+                {showUserMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => { setShowUserMenu(false); setShowPinChange(false); }} />
+                    <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 py-1 min-w-[200px] animate-scale-in">
+                      <div className="px-3 py-2 border-b border-gray-100">
+                        <div className="font-bold text-sm text-gray-900">{player.name}</div>
+                        <div className="text-[10px] text-gray-400">{player.slug}</div>
+                      </div>
+
+                      {!showPinChange ? (
+                        <>
+                          <button
+                            onClick={() => setShowPinChange(true)}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <KeyRound size={14} />
+                            Keisti PIN
+                          </button>
+                          <button
+                            onClick={() => { dispatch(logout()); setShowUserMenu(false); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer transition-colors"
+                          >
+                            <LogOut size={14} />
+                            Atsijungti
+                          </button>
+                        </>
+                      ) : (
+                        <div className="px-3 py-2 flex flex-col gap-2">
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            maxLength={4}
+                            placeholder="Dabartinis PIN"
+                            value={currentPin}
+                            onChange={(e) => setCurrentPin(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-center tracking-[8px] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                          />
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            maxLength={4}
+                            placeholder="Naujas PIN"
+                            value={newPin}
+                            onChange={(e) => setNewPin(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-center tracking-[8px] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleChangePin}
+                              disabled={pinLoading || !currentPin || newPin.length < 4}
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-[var(--color-primary)] text-white rounded-lg text-xs font-medium cursor-pointer hover:bg-[var(--color-primary-light)] disabled:opacity-40 transition-colors"
+                            >
+                              {pinLoading ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                              Išsaugoti
+                            </button>
+                            <button
+                              onClick={() => { setShowPinChange(false); setCurrentPin(""); setNewPin(""); }}
+                              className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium cursor-pointer hover:bg-gray-200 transition-colors"
+                            >
+                              Atšaukti
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
