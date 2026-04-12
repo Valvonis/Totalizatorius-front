@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { fetchMatches } from "../features/matches/matchesSlice";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchQuestions } from "../features/questions/questionsSlice";
 import { fetchActiveTournament } from "../features/tournaments/tournamentSlice";
+import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import Layout from "../components/Layout";
 import MatchList from "../features/matches/MatchList";
 import PredictionModal from "../features/predictions/PredictionModal";
 import QuestionCard from "../features/questions/QuestionCard";
+
+const REFRESH_INTERVAL = 60_000; // 60 seconds
 
 export default function HomePage() {
   const dispatch = useAppDispatch();
@@ -26,6 +29,16 @@ export default function HomePage() {
       dispatch(fetchQuestions(tournament._id));
     }
   }, [dispatch, tournament]);
+
+  const refreshData = useCallback(() => {
+    if (tournament) {
+      dispatch(fetchMatches(tournament._id));
+      dispatch(fetchLeaderboard(tournament._id));
+      dispatch(fetchQuestions(tournament._id));
+    }
+  }, [dispatch, tournament]);
+
+  useAutoRefresh(refreshData, REFRESH_INTERVAL);
 
   return (
     <Layout>
