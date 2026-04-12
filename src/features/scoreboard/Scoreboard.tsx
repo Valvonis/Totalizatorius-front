@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAppSelector } from "../../hooks";
 import { Trophy, Medal } from "lucide-react";
 import { ScoreboardSkeleton } from "../../components/ui/Skeleton";
@@ -15,7 +16,7 @@ export default function Scoreboard() {
   if (entries.length === 0) return null;
 
   return (
-    <div className="flex gap-2 items-end justify-center">
+    <Link to="/leaderboard" className="flex gap-2 items-end justify-center no-underline cursor-pointer hover:opacity-90 transition-opacity">
       {entries.slice(0, 3).map((entry, i) => {
         const style = medalStyles[i] ?? medalStyles[2];
         return (
@@ -29,6 +30,6 @@ export default function Scoreboard() {
           </div>
         );
       })}
-    </div>
+    </Link>
   );
 }

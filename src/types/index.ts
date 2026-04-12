@@ -44,6 +44,13 @@ export interface ScoreboardEntry {
   matchPoints: number;
   questionPoints: number;
   totalPoints: number;
+  totalPredictions: number;
+  exactScores: number;
+  correctDifferences: number;
+  correctWinners: number;
+  wrongPredictions: number;
+  totalMatches: number;
+  scoredMatches: number;
 }
 
 export interface SpecialAnswer {

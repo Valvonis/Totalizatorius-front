@@ -9,7 +9,7 @@ import { fetchMatches } from "../features/matches/matchesSlice";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchQuestions } from "../features/questions/questionsSlice";
 import Scoreboard from "../features/scoreboard/Scoreboard";
-import { LogOut, Shield, Home, ChevronDown, Sun, Moon } from "lucide-react";
+import { LogOut, Shield, Home, ChevronDown, Sun, Moon, BarChart3 } from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -83,6 +83,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <nav className="flex gap-2">
               <Link to="/" className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
                 <Home size={20} />
+              </Link>
+              <Link to="/leaderboard" className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
+                <BarChart3 size={20} />
               </Link>
               {isAdmin && (
                 <Link to="/admin" className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
