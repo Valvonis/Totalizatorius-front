@@ -99,8 +99,8 @@ export default function MatchList({ onPredict }: MatchListProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Progress summary + sticky filter bar */}
-      <div className="sticky top-[57px] md:top-[57px] z-20 -mx-4 px-4 py-3 backdrop-blur-md bg-[#0a0f1e]/70 border-b border-white/5">
+      {/* Progress summary + filter bar */}
+      <div>
         {/* Progress bar */}
         {totalMatches > 0 && (
           <div className="flex items-center gap-3 mb-2.5">
