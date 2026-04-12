@@ -1,9 +1,10 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchActiveTournament } from "../features/tournaments/tournamentSlice";
 import Layout from "../components/Layout";
-import { Trophy, Medal, Target, TrendingUp, XCircle, BarChart3, Calendar } from "lucide-react";
+import { Trophy, Medal, Target, TrendingUp, XCircle, BarChart3, Calendar, ChevronRight } from "lucide-react";
 import { dayjs } from "../utils/date";
 
 const rankStyles = [
@@ -77,9 +78,12 @@ export default function LeaderboardPage() {
                       </span>
                     )}
                     <div>
-                      <span className="font-bold text-lg text-gray-900">{entry.playerName}</span>
+                      <Link to={`/player/${entry.playerSlug}`} className="font-bold text-lg text-gray-900 no-underline hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
+                        {entry.playerName}
+                        <ChevronRight size={16} className="text-gray-300" />
+                      </Link>
                       {style && (
-                        <span className={`ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.label}`}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${style.label}`}>
                           {i === 0 ? "1 vieta" : i === 1 ? "2 vieta" : "3 vieta"}
                         </span>
                       )}

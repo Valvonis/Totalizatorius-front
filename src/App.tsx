@@ -3,6 +3,7 @@ import { useAuth } from "./features/auth/useAuth";
 import LoginPage from "./features/auth/LoginPage";
 import HomePage from "./pages/HomePage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import PlayerHistoryPage from "./pages/PlayerHistoryPage";
 import AdminPage from "./pages/AdminPage";
 import ToastContainer from "./components/ui/Toast";
 
@@ -31,6 +32,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <LeaderboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/player/:slug"
+          element={
+            <ProtectedRoute>
+              <PlayerHistoryPage />
             </ProtectedRoute>
           }
         />
