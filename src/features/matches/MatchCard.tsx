@@ -17,6 +17,14 @@ function pointsColor(pts: number | null): string {
   return "text-[var(--color-points-0)]";
 }
 
+function pointsLabel(pts: number | null): string {
+  if (pts === 5) return "Tikslus rezultatas!";
+  if (pts === 3) return "Teisingas skirtumas";
+  if (pts === 1) return "Teisingas nugalėtojas";
+  if (pts === 0) return "Neteisingas spėjimas";
+  return "";
+}
+
 function pointsBg(pts: number | null): string {
   if (pts === null) return "";
   if (pts === 5) return "bg-green-50";
@@ -74,7 +82,7 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
                   <span className="font-bold text-sm text-gray-800">
                     {pred.team1Goal}:{pred.team2Goal}
                   </span>
-                  <span className={`text-xs font-bold ${pointsColor(pred.points)}`}>
+                  <span className={`text-xs font-bold ${pointsColor(pred.points)}`} title={pointsLabel(pred.points)}>
                     {pred.points !== null ? `+${pred.points}` : "-"}
                   </span>
                 </>
