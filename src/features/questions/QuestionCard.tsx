@@ -65,13 +65,13 @@ export default function QuestionCard({ question }: QuestionCardProps) {
           <Check size={16} className="text-green-600 shrink-0" />
           {question.type === "country" ? (
             <div className="flex items-center gap-2">
-              <Flag countryName={question.correctAnswer} size={28} />
+              <Flag countryName={question.correctAnswer} size={36} />
               <span className="font-bold text-green-800 text-sm">{question.correctAnswer}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               {question.answerImageUrl && (
-                <img src={question.answerImageUrl} alt={question.correctAnswer} className="w-8 h-8 rounded-full object-cover" />
+                <img src={question.answerImageUrl} alt={question.correctAnswer} className="w-11 h-11 rounded-full object-cover" />
               )}
               <span className="font-bold text-green-800 text-sm">{question.correctAnswer}</span>
             </div>
@@ -101,7 +101,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
 
                 {question.type === "country" ? (
                   <>
-                    <Flag countryName={a.answer} size={32} />
+                    <Flag countryName={a.answer} size={36} />
                     <span className={`text-xs font-medium ${wrong ? "text-gray-400 line-through" : "text-gray-700"}`}>
                       {a.answer}
                     </span>
@@ -112,7 +112,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
                       <img
                         src={a.additionalData.imageUrl}
                         alt={a.answer}
-                        className={`w-10 h-10 rounded-full object-cover ${wrong ? "opacity-40 grayscale" : ""}`}
+                        className={`w-12 h-12 rounded-full object-cover ${wrong ? "opacity-40 grayscale" : ""}`}
                       />
                     ) : null}
                     <span className={`text-sm font-bold ${wrong ? "text-gray-400 line-through" : "text-gray-800"}`}>

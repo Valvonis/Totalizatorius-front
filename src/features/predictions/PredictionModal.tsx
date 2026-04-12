@@ -47,12 +47,12 @@ export default function PredictionModal({ matchId, onClose }: PredictionModalPro
         {/* Match info */}
         <div className="flex items-center justify-center gap-4">
           <div className="flex flex-col items-center">
-            <Flag countryName={match.team1} size={40} />
+            <Flag countryName={match.team1} size={48} />
             <span className="text-xs mt-1">{match.team1}</span>
           </div>
           <span className="text-gray-400 font-bold">vs</span>
           <div className="flex flex-col items-center">
-            <Flag countryName={match.team2} size={40} />
+            <Flag countryName={match.team2} size={48} />
             <span className="text-xs mt-1">{match.team2}</span>
           </div>
         </div>

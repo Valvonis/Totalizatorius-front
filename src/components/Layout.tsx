@@ -50,7 +50,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <Link to="/" className="no-underline flex items-center gap-2">
               {tournament?.logoUrl && (
-                <img src={tournament.logoUrl} alt="" className="h-8 w-8 object-contain" />
+                <img src={tournament.logoUrl} alt="" className="h-10 w-10 object-contain" />
               )}
               <h1 className="text-white text-xl max-sm:text-lg font-bold">
                 {tournament?.name ?? "TOTALIZATORIUS"}
