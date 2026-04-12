@@ -48,6 +48,30 @@ export function getCountdown(time: string): string {
   return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
 }
 
+export function isToday(time: string): boolean {
+  return dayjs(time).isSame(dayjs(), "day");
+}
+
+export function isTomorrow(time: string): boolean {
+  return dayjs(time).isSame(dayjs().add(1, "day"), "day");
+}
+
+export function getDateKey(time: string): string {
+  return dayjs(time).format("YYYY-MM-DD");
+}
+
+export function formatDayHeader(time: string): string {
+  const d = dayjs(time);
+  if (d.isSame(dayjs(), "day")) return "Šiandien";
+  if (d.isSame(dayjs().add(1, "day"), "day")) return "Rytoj";
+  if (d.isSame(dayjs().subtract(1, "day"), "day")) return "Vakar";
+  return d.format("MMMM D, dddd"); // e.g. "birželio 14, šeštadienis"
+}
+
+export function formatTimeOnly(time: string): string {
+  return dayjs(time).format("HH:mm");
+}
+
 /**
  * Converts a datetime-local input value (e.g. "2026-06-11T19:00")
  * to a proper ISO string with timezone, so the backend stores it as UTC correctly.
