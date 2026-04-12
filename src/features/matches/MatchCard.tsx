@@ -1,7 +1,7 @@
 import Flag from "../../components/Flag";
 import { useAuth } from "../auth/useAuth";
-import { formatMatchTime, timeFromNow, isMatchStarted } from "../../utils/date";
-import { Clock, Check, Timer, Trophy } from "lucide-react";
+import { formatMatchTime, timeFromNow, isMatchStarted, getMatchUrgency, getCountdown } from "../../utils/date";
+import { Clock, Check, Timer, Trophy, AlertTriangle } from "lucide-react";
 import type { Match } from "../../types";
 
 interface MatchCardProps {
@@ -44,20 +44,38 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 animate-fade-up">
       {/* Time header */}
-      <div className="flex justify-between items-center px-4 py-2.5 text-gray-400 text-xs bg-gray-50/80 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <span>{timeFromNow(match.time)}</span>
-          {match.stage && (
-            <span className="text-[10px] font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-1.5 py-0.5 rounded">
-              {match.stage}
+      {(() => {
+        const urgency = getMatchUrgency(match.time);
+        const urgencyStyles = {
+          plenty: "bg-gray-50/80 text-gray-400 border-gray-100",
+          soon: "bg-amber-50 text-amber-600 border-amber-100",
+          urgent: "bg-red-50 text-red-600 border-red-100",
+          started: "bg-gray-50/80 text-gray-400 border-gray-100",
+        };
+        return (
+          <div className={`flex justify-between items-center px-4 py-2.5 text-xs border-b ${urgencyStyles[urgency]}`}>
+            <div className="flex items-center gap-2">
+              {!started ? (
+                <span className="flex items-center gap-1 font-medium">
+                  {urgency === "urgent" && <AlertTriangle size={12} />}
+                  {getCountdown(match.time)}
+                </span>
+              ) : (
+                <span>{timeFromNow(match.time)}</span>
+              )}
+              {match.stage && (
+                <span className="text-[10px] font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-1.5 py-0.5 rounded">
+                  {match.stage}
+                </span>
+              )}
+            </div>
+            <span className="flex items-center gap-1 text-gray-400">
+              <Clock size={13} />
+              {formatMatchTime(match.time)}
             </span>
-          )}
-        </div>
-        <span className="flex items-center gap-1">
-          <Clock size={13} />
-          {formatMatchTime(match.time)}
-        </span>
-      </div>
+          </div>
+        );
+      })()}
 
       {/* Teams & Score */}
       <div className="flex items-center justify-center gap-6 py-6 px-4">
