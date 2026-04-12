@@ -12,22 +12,23 @@ interface MatchListProps {
   onPredict: (matchId: string) => void;
 }
 
-// Extract unique stages from matches
-function getStages(matches: Match[]): string[] {
-  const stages = new Set<string>();
+// Extract unique stages with match counts
+function getStagesWithCounts(matches: Match[]): { stage: string; count: number }[] {
+  const map = new Map<string, number>();
   for (const m of matches) {
-    if (m.stage) stages.add(m.stage);
+    if (m.stage) map.set(m.stage, (map.get(m.stage) || 0) + 1);
   }
-  // Sort: groups first (alphabetically), then knockout in order
   const knockoutOrder = ["Šešioliktfinalis", "Aštuntfinalis", "Ketvirtfinalis", "Pusfinalis", "3 vietos rungtynės", "Finalas"];
-  return Array.from(stages).sort((a, b) => {
-    const aKO = knockoutOrder.indexOf(a);
-    const bKO = knockoutOrder.indexOf(b);
-    if (aKO === -1 && bKO === -1) return a.localeCompare(b); // both groups
-    if (aKO === -1) return -1; // groups before knockout
-    if (bKO === -1) return 1;
-    return aKO - bKO;
-  });
+  return Array.from(map.entries())
+    .map(([stage, count]) => ({ stage, count }))
+    .sort((a, b) => {
+      const aKO = knockoutOrder.indexOf(a.stage);
+      const bKO = knockoutOrder.indexOf(b.stage);
+      if (aKO === -1 && bKO === -1) return a.stage.localeCompare(b.stage);
+      if (aKO === -1) return -1;
+      if (bKO === -1) return 1;
+      return aKO - bKO;
+    });
 }
 
 // Group matches by date
@@ -60,7 +61,7 @@ export default function MatchList({ onPredict }: MatchListProps) {
     localStorage.setItem("past-view", next);
   };
 
-  const { todayMatches, upcoming, pastDays, stages, needsPrediction } = useMemo(() => {
+  const { todayMatches, upcoming, pastDays, stagesWithCounts, needsPrediction, totalPlayed, totalMatches } = useMemo(() => {
     let filtered = items;
     if (stageFilter) {
       filtered = items.filter((m) => m.stage === stageFilter);
@@ -70,12 +71,14 @@ export default function MatchList({ onPredict }: MatchListProps) {
     const upcoming = filtered.filter((m) => !isMatchStarted(m.time) && !isToday(m.time));
     const past = filtered.filter((m) => isMatchStarted(m.time) && !isToday(m.time)).reverse();
     const pastDays = groupByDate(past);
-    const stages = getStages(items); // always from all items, not filtered
+    const stagesWithCounts = getStagesWithCounts(items);
     const needsPrediction = filtered.filter(
       (m) => !isMatchStarted(m.time) && !m.predictions.some((p) => p.playerId === player?.id)
     );
+    const totalPlayed = items.filter((m) => m.team1Score !== null).length;
+    const totalMatches = items.length;
 
-    return { todayMatches, upcoming, pastDays, stages, needsPrediction };
+    return { todayMatches, upcoming, pastDays, stagesWithCounts, needsPrediction, totalPlayed, totalMatches };
   }, [items, stageFilter, player]);
 
   if (loading) {
@@ -91,41 +94,60 @@ export default function MatchList({ onPredict }: MatchListProps) {
     );
   }
 
-  // Shorten stage names for filter pills
   const shortStage = (s: string) => s.replace("Grupė ", "");
-
   const INITIAL_PAST_DAYS = 3;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Filter tabs */}
-      {stages.length > 1 && (
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setStageFilter(null)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-              !stageFilter
-                ? "bg-white text-[var(--color-primary)] shadow-sm"
-                : "bg-white/10 text-white/70 hover:bg-white/20"
-            }`}
-          >
-            Visos
-          </button>
-          {stages.map((s) => (
+      {/* Progress summary + sticky filter bar */}
+      <div className="sticky top-[57px] md:top-[57px] z-20 -mx-4 px-4 py-3 backdrop-blur-md bg-[#0a0f1e]/70 border-b border-white/5">
+        {/* Progress bar */}
+        {totalMatches > 0 && (
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500"
+                style={{ width: `${(totalPlayed / totalMatches) * 100}%` }}
+              />
+            </div>
+            <span className="text-[11px] text-white/50 shrink-0 tabular-nums">
+              {totalPlayed}/{totalMatches} sužaista
+            </span>
+          </div>
+        )}
+
+        {/* Filter tabs */}
+        {stagesWithCounts.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
             <button
-              key={s}
-              onClick={() => setStageFilter(stageFilter === s ? null : s)}
+              onClick={() => setStageFilter(null)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                stageFilter === s
+                !stageFilter
                   ? "bg-white text-[var(--color-primary)] shadow-sm"
                   : "bg-white/10 text-white/70 hover:bg-white/20"
               }`}
             >
-              {shortStage(s)}
+              Visos
             </button>
-          ))}
-        </div>
-      )}
+            {stagesWithCounts.map(({ stage, count }) => (
+              <button
+                key={stage}
+                onClick={() => setStageFilter(stageFilter === stage ? null : stage)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1 ${
+                  stageFilter === stage
+                    ? "bg-white text-[var(--color-primary)] shadow-sm"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }`}
+              >
+                {shortStage(stage)}
+                <span className={`text-[10px] ${stageFilter === stage ? "text-[var(--color-primary)]/60" : "text-white/40"}`}>
+                  {count}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Needs prediction alert */}
       {needsPrediction.length > 0 && !stageFilter && (

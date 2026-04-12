@@ -119,6 +119,8 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
   const canPredict = !started && !currentPlayerPredicted;
   const stageStyle = getStageStyle(match.stage || "");
   const knockout = isKnockout(match.stage || "");
+  const team1Won = match.team1Score !== null && match.team2Score !== null && match.team1Score > match.team2Score;
+  const team2Won = match.team1Score !== null && match.team2Score !== null && match.team2Score > match.team1Score;
 
   return (
     <div
@@ -162,9 +164,9 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
 
       {/* Teams & Score */}
       <div className={`flex items-center justify-center gap-6 px-4 ${knockout ? "py-8" : "py-6"}`}>
-        <div className="flex flex-col items-center gap-1.5 w-20">
+        <div className={`flex flex-col items-center gap-1.5 w-20 ${team2Won ? "opacity-50" : ""}`}>
           <Flag countryName={match.team1} size={knockout ? 56 : 48} />
-          <span className="text-xs text-center leading-tight font-medium text-[var(--card-text-secondary)]">{match.team1}</span>
+          <span className={`text-xs text-center leading-tight ${team1Won ? "font-bold text-[var(--card-text)]" : "font-medium text-[var(--card-text-secondary)]"}`}>{match.team1}</span>
         </div>
         <div className="min-w-[60px] text-center">
           {match.team1Score !== null ? (
@@ -173,9 +175,9 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
             <span className="text-lg text-[var(--card-text-muted)] italic font-medium">vs</span>
           )}
         </div>
-        <div className="flex flex-col items-center gap-1.5 w-20">
+        <div className={`flex flex-col items-center gap-1.5 w-20 ${team1Won ? "opacity-50" : ""}`}>
           <Flag countryName={match.team2} size={knockout ? 56 : 48} />
-          <span className="text-xs text-center leading-tight font-medium text-[var(--card-text-secondary)]">{match.team2}</span>
+          <span className={`text-xs text-center leading-tight ${team2Won ? "font-bold text-[var(--card-text)]" : "font-medium text-[var(--card-text-secondary)]"}`}>{match.team2}</span>
         </div>
       </div>
 
