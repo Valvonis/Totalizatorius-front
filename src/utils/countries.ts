@@ -2,7 +2,7 @@
 const countries: Record<string, string> = {
   // UEFA
   Albanija: "AL",
-  Anglija: "GB",
+  Anglija: "GB-ENG",
   Austrija: "AT",
   Belgija: "BE",
   "Bosnija ir Hercegovina": "BA",
