@@ -51,7 +51,7 @@ export default function MatchList({ onPredict }: MatchListProps) {
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [showAllPast, setShowAllPast] = useState(false);
   const [pastView, setPastView] = useState<"compact" | "cards">(() => {
-    return (localStorage.getItem("past-view") as "compact" | "cards") || "compact";
+    return (localStorage.getItem("past-view") as "compact" | "cards") || "cards";
   });
 
   const togglePastView = () => {
