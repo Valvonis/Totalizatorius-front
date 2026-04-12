@@ -31,7 +31,20 @@ function getStages(matches: Match[]): string[] {
 }
 
 // Group matches by date
-function groupByDate(matches: Match[]): { date: string; label: string; matches: Match[] }[] {
+type DayGroup = { date: string; label: string; matches: Match[]; stageGroups: StageGroup[] };
+type StageGroup = { stage: string; matches: Match[] };
+
+function groupByStage(matches: Match[]): StageGroup[] {
+  const map = new Map<string, Match[]>();
+  for (const m of matches) {
+    const key = m.stage || "";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(m);
+  }
+  return Array.from(map.entries()).map(([stage, matches]) => ({ stage, matches }));
+}
+
+function groupByDate(matches: Match[]): DayGroup[] {
   const map = new Map<string, Match[]>();
   for (const m of matches) {
     const key = getDateKey(m.time);
@@ -42,7 +55,13 @@ function groupByDate(matches: Match[]): { date: string; label: string; matches: 
     date,
     label: formatDayHeader(matches[0].time),
     matches,
+    stageGroups: groupByStage(matches),
   }));
+}
+
+// Only show stage subheadings if there are multiple stages in a day
+function hasMultipleStages(day: DayGroup): boolean {
+  return day.stageGroups.length > 1;
 }
 
 export default function MatchList({ onPredict }: MatchListProps) {
@@ -136,19 +155,30 @@ export default function MatchList({ onPredict }: MatchListProps) {
       )}
 
       {/* Today's matches */}
-      {todayMatches.length > 0 && (
-        <section>
-          <h2 className="text-white text-2xl text-center py-2.5 mb-4 rounded-xl bg-gradient-to-r from-red-600/50 via-orange-500/40 to-red-600/50 flex items-center justify-center gap-2 backdrop-blur-sm">
-            <Flame size={20} />
-            Šiandien
-          </h2>
-          <div className="grid grid-cols-2 max-md:grid-cols-1 gap-4">
-            {todayMatches.map((m) => (
-              <MatchCard key={m._id} match={m} onPredict={onPredict} />
+      {todayMatches.length > 0 && (() => {
+        const todayStages = groupByStage(todayMatches);
+        const multiStage = todayStages.length > 1;
+        return (
+          <section>
+            <h2 className="text-white text-2xl text-center py-2.5 mb-4 rounded-xl bg-gradient-to-r from-red-600/50 via-orange-500/40 to-red-600/50 flex items-center justify-center gap-2 backdrop-blur-sm">
+              <Flame size={20} />
+              Šiandien
+            </h2>
+            {todayStages.map((sg) => (
+              <div key={sg.stage} className="mb-4">
+                {multiStage && sg.stage && (
+                  <h3 className="text-white/50 text-xs font-bold mb-2 px-1 uppercase tracking-wider">{sg.stage}</h3>
+                )}
+                <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
+                  {sg.matches.map((m) => (
+                    <MatchCard key={m._id} match={m} onPredict={onPredict} />
+                  ))}
+                </div>
+              </div>
             ))}
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {/* Upcoming matches grouped by date */}
       {upcoming.length > 0 && (
@@ -158,13 +188,20 @@ export default function MatchList({ onPredict }: MatchListProps) {
             Artėjančios varžybos
           </h2>
           {groupByDate(upcoming).map((day) => (
-            <div key={day.date} className="mb-4">
+            <div key={day.date} className="mb-5">
               <h3 className="text-white/60 text-sm font-medium mb-2 px-1 capitalize">{day.label}</h3>
-              <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
-                {day.matches.map((m) => (
-                  <MatchCard key={m._id} match={m} onPredict={onPredict} />
-                ))}
-              </div>
+              {day.stageGroups.map((sg) => (
+                <div key={sg.stage} className="mb-3">
+                  {hasMultipleStages(day) && sg.stage && (
+                    <h4 className="text-white/40 text-[11px] font-bold mb-1.5 px-1 uppercase tracking-wider">{sg.stage}</h4>
+                  )}
+                  <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
+                    {sg.matches.map((m) => (
+                      <MatchCard key={m._id} match={m} onPredict={onPredict} />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </section>
@@ -191,19 +228,26 @@ export default function MatchList({ onPredict }: MatchListProps) {
           {(showAllPast ? pastDays : pastDays.slice(0, INITIAL_PAST_DAYS)).map((day) => (
             <div key={day.date} className="mb-4">
               <h3 className="text-white/50 text-xs font-medium mb-2 px-1 capitalize">{day.label}</h3>
-              {pastView === "compact" ? (
-                <div className="flex flex-col gap-1">
-                  {day.matches.map((m) => (
-                    <MatchRowCompact key={m._id} match={m} />
-                  ))}
+              {day.stageGroups.map((sg) => (
+                <div key={sg.stage} className="mb-2">
+                  {hasMultipleStages(day) && sg.stage && (
+                    <h4 className="text-white/30 text-[10px] font-bold mb-1 px-1 uppercase tracking-wider">{sg.stage}</h4>
+                  )}
+                  {pastView === "compact" ? (
+                    <div className="flex flex-col gap-1">
+                      {sg.matches.map((m) => (
+                        <MatchRowCompact key={m._id} match={m} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
+                      {sg.matches.map((m) => (
+                        <MatchCard key={m._id} match={m} onPredict={onPredict} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
-                  {day.matches.map((m) => (
-                    <MatchCard key={m._id} match={m} onPredict={onPredict} />
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
           ))}
           {pastDays.length > INITIAL_PAST_DAYS && (
