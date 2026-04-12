@@ -78,9 +78,9 @@ export default function LeaderboardPage() {
                       </span>
                     )}
                     <div>
-                      <Link to={`/player/${entry.playerSlug}`} className="font-bold text-lg text-[var(--card-text)] no-underline hover:text-[var(--color-primary)] transition-colors flex items-center gap-1">
+                      <Link to={`/player/${entry.playerSlug}`} className="font-bold text-lg text-gray-900 no-underline hover:text-[var(--color-primary-light)] hover:underline transition-colors flex items-center gap-1">
                         {entry.playerName}
-                        <ChevronRight size={16} className="text-gray-300" />
+                        <ChevronRight size={16} className="text-gray-400" />
                       </Link>
                       {style && (
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${style.label}`}>
