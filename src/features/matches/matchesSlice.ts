@@ -33,7 +33,7 @@ export const createMatch = createAsyncThunk(
 
 export const updateMatch = createAsyncThunk(
   "matches/update",
-  async ({ id, ...updates }: { id: string; team1Score?: number; team2Score?: number }) => {
+  async ({ id, ...updates }: { id: string; team1?: string; team2?: string; time?: string; stage?: string; team1Score?: number; team2Score?: number }) => {
     const { data } = await api.patch<Match>(`/matches/${id}`, updates);
     return data;
   }

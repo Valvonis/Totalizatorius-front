@@ -10,7 +10,7 @@ import Flag from "../components/Flag";
 import { getCountryNames } from "../utils/countries";
 import { isMatchStarted, formatMatchTime } from "../utils/date";
 import { showToast } from "../components/ui/Toast";
-import { Plus, Save, Trophy, Check, X, HelpCircle, Award, Users, Shield, ShieldOff, KeyRound, Trash2 } from "lucide-react";
+import { Plus, Save, Trophy, Check, X, HelpCircle, Award, Users, Shield, ShieldOff, KeyRound, Trash2, Pencil } from "lucide-react";
 import api from "../api/client";
 import type { Player } from "../types";
 
@@ -32,6 +32,13 @@ export default function AdminPage() {
   const [editingMatch, setEditingMatch] = useState<string | null>(null);
   const [score1, setScore1] = useState("");
   const [score2, setScore2] = useState("");
+
+  // Match detail editing
+  const [editingMatchDetails, setEditingMatchDetails] = useState<string | null>(null);
+  const [editTeam1, setEditTeam1] = useState("");
+  const [editTeam2, setEditTeam2] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [editStage, setEditStage] = useState("");
 
   // Tournament creation
   const [tName, setTName] = useState("");
@@ -113,6 +120,26 @@ export default function AdminPage() {
       setScore2("");
     } catch {
       showToast("Nepavyko atnaujinti rezultato", "error");
+    }
+  };
+
+  const startEditingMatchDetails = (m: typeof matches[0]) => {
+    setEditingMatchDetails(m._id);
+    setEditTeam1(m.team1);
+    setEditTeam2(m.team2);
+    setEditTime(m.time.slice(0, 16)); // datetime-local format
+    setEditStage(m.stage || "");
+  };
+
+  const handleSaveMatchDetails = async (matchId: string) => {
+    if (!editTeam1 || !editTeam2 || !editTime) return;
+
+    try {
+      await dispatch(updateMatch({ id: matchId, team1: editTeam1, team2: editTeam2, time: editTime, stage: editStage || undefined })).unwrap();
+      showToast("Varžybos atnaujintos!", "success");
+      setEditingMatchDetails(null);
+    } catch {
+      showToast("Nepavyko atnaujinti varžybų", "error");
     }
   };
 
@@ -734,30 +761,143 @@ export default function AdminPage() {
           </form>
         </div>
 
-        {/* Existing matches — set results */}
+        {/* All matches — edit details & set results */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold mb-4">Varžybų rezultatai</h2>
+          <h2 className="text-xl font-bold mb-4">Visos varžybos</h2>
           <div className="flex flex-col gap-3">
-            {matches
-              .filter((m) => isMatchStarted(m.time))
-              .map((m) => (
-                <div key={m._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl flex-wrap">
-                  <div className="flex items-center gap-2 min-w-[200px]">
-                    <Flag countryName={m.team1} size={24} />
-                    <span className="text-sm">{m.team1}</span>
-                    <span className="text-gray-400">vs</span>
-                    <span className="text-sm">{m.team2}</span>
-                    <Flag countryName={m.team2} size={24} />
-                  </div>
+            {matches.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">Varžybų dar nėra.</p>
+            )}
+            {matches.map((m) => {
+              const started = isMatchStarted(m.time);
+              return (
+                <div key={m._id} className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl">
+                  {editingMatchDetails === m._id ? (
+                    /* Edit mode */
+                    <div className="flex flex-col gap-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          value={editTeam1}
+                          onChange={(e) => setEditTeam1(e.target.value)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                        >
+                          {countries.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={editTeam2}
+                          onChange={(e) => setEditTeam2(e.target.value)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                        >
+                          {countries.map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="datetime-local"
+                          value={editTime}
+                          onChange={(e) => setEditTime(e.target.value)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                        />
+                        <select
+                          value={editStage}
+                          onChange={(e) => setEditStage(e.target.value)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                        >
+                          <option value="">Nepasirinkta</option>
+                          <option value="Grupė A">Grupė A</option>
+                          <option value="Grupė B">Grupė B</option>
+                          <option value="Grupė C">Grupė C</option>
+                          <option value="Grupė D">Grupė D</option>
+                          <option value="Grupė E">Grupė E</option>
+                          <option value="Grupė F">Grupė F</option>
+                          <option value="Grupė G">Grupė G</option>
+                          <option value="Grupė H">Grupė H</option>
+                          <option value="Grupė I">Grupė I</option>
+                          <option value="Grupė J">Grupė J</option>
+                          <option value="Grupė K">Grupė K</option>
+                          <option value="Grupė L">Grupė L</option>
+                          <option value="Aštuntfinalis">Aštuntfinalis</option>
+                          <option value="Ketvirtfinalis">Ketvirtfinalis</option>
+                          <option value="Pusfinalis">Pusfinalis</option>
+                          <option value="Finalas">Finalas</option>
+                          <option value="3 vietos rungtynės">3 vietos rungtynės</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleSaveMatchDetails(m._id)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium cursor-pointer hover:bg-green-700 transition-colors"
+                        >
+                          <Save size={12} />
+                          Išsaugoti
+                        </button>
+                        <button
+                          onClick={() => setEditingMatchDetails(null)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-gray-200 text-gray-600 rounded-lg text-xs font-medium cursor-pointer hover:bg-gray-300 transition-colors"
+                        >
+                          Atšaukti
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* View mode */
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Flag countryName={m.team1} size={24} />
+                        <span className="text-sm font-medium">{m.team1}</span>
+                        <span className="text-gray-300">vs</span>
+                        <span className="text-sm font-medium">{m.team2}</span>
+                        <Flag countryName={m.team2} size={24} />
+                      </div>
+                      <span className="text-xs text-gray-400">{formatMatchTime(m.time)}</span>
+                      {m.stage && (
+                        <span className="text-[10px] font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-1.5 py-0.5 rounded">
+                          {m.stage}
+                        </span>
+                      )}
+                      {m.team1Score !== null && (
+                        <span className="font-bold text-sm">{m.team1Score} - {m.team2Score}</span>
+                      )}
+                      {!started && (
+                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Būsimos</span>
+                      )}
 
-                  <span className="text-xs text-gray-400">{formatMatchTime(m.time)}</span>
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 ml-auto">
+                        <button
+                          onClick={() => startEditingMatchDetails(m)}
+                          className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                          title="Redaguoti varžybas"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        {started && m.team1Score === null && editingMatch !== m._id && (
+                          <button
+                            onClick={() => setEditingMatch(m._id)}
+                            className="text-xs text-[var(--color-primary)] hover:underline cursor-pointer px-1"
+                          >
+                            Įvesti rezultatą
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteMatch(m._id)}
+                          className="p-1.5 text-gray-300 hover:text-red-600 rounded-lg hover:bg-red-50 cursor-pointer transition-colors"
+                          title="Ištrinti varžybas"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-                  {m.team1Score !== null ? (
-                    <span className="font-bold">
-                      {m.team1Score} - {m.team2Score}
-                    </span>
-                  ) : editingMatch === m._id ? (
-                    <div className="flex items-center gap-2">
+                  {/* Inline result entry */}
+                  {editingMatch === m._id && editingMatchDetails !== m._id && (
+                    <div className="flex items-center gap-2 border-t border-gray-200 pt-2">
+                      <span className="text-xs text-gray-400">Rezultatas:</span>
                       <input
                         type="number"
                         min={0}
@@ -788,23 +928,10 @@ export default function AdminPage() {
                         <X size={14} />
                       </button>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => setEditingMatch(m._id)}
-                      className="text-xs text-[var(--color-primary)] underline cursor-pointer"
-                    >
-                      Įvesti rezultatą
-                    </button>
                   )}
-                  <button
-                    onClick={() => handleDeleteMatch(m._id)}
-                    className="ml-auto p-1 text-gray-300 hover:text-red-600 rounded-lg hover:bg-red-50 cursor-pointer transition-colors"
-                    title="Ištrinti varžybas"
-                  >
-                    <Trash2 size={14} />
-                  </button>
                 </div>
-              ))}
+              );
+            })}
           </div>
         </div>
 
