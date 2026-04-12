@@ -56,6 +56,19 @@ export const updateTournamentLogo = createAsyncThunk(
   }
 );
 
+export const deleteTournament = createAsyncThunk(
+  "tournament/delete",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await api.delete(`/tournaments/${id}`);
+      return id;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      return rejectWithValue(error.response?.data?.message || "Failed to delete tournament");
+    }
+  }
+);
+
 const tournamentSlice = createSlice({
   name: "tournament",
   initialState,
@@ -101,6 +114,9 @@ const tournamentSlice = createSlice({
         if (state.active?._id === updated._id) {
           state.active = updated;
         }
+      })
+      .addCase(deleteTournament.fulfilled, (state, action) => {
+        state.all = state.all.filter((t) => t._id !== action.payload);
       });
   },
 });

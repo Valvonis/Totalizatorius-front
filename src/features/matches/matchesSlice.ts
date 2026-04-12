@@ -39,6 +39,14 @@ export const updateMatch = createAsyncThunk(
   }
 );
 
+export const deleteMatch = createAsyncThunk(
+  "matches/delete",
+  async (id: string) => {
+    await api.delete(`/matches/${id}`);
+    return id;
+  }
+);
+
 const matchesSlice = createSlice({
   name: "matches",
   initialState,
@@ -63,6 +71,9 @@ const matchesSlice = createSlice({
       .addCase(updateMatch.fulfilled, (state, action) => {
         const index = state.items.findIndex((m) => m._id === action.payload._id);
         if (index !== -1) state.items[index] = action.payload;
+      })
+      .addCase(deleteMatch.fulfilled, (state, action) => {
+        state.items = state.items.filter((m) => m._id !== action.payload);
       });
   },
 });

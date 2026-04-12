@@ -55,6 +55,14 @@ export const resolveQuestion = createAsyncThunk(
   }
 );
 
+export const deleteQuestion = createAsyncThunk(
+  "questions/delete",
+  async (id: string) => {
+    await api.delete(`/questions/${id}`);
+    return id;
+  }
+);
+
 export const updateAnswerPhoto = createAsyncThunk(
   "questions/updateAnswerPhoto",
   async (
@@ -114,6 +122,9 @@ const questionsSlice = createSlice({
           state.items[idx].answerImageUrl = action.payload.answerImageUrl;
           state.items[idx].isResolved = action.payload.isResolved;
         }
+      })
+      .addCase(deleteQuestion.fulfilled, (state, action) => {
+        state.items = state.items.filter((q) => q._id !== action.payload);
       });
   },
 });

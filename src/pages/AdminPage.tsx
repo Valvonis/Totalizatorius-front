@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { createMatch, updateMatch, fetchMatches } from "../features/matches/matchesSlice";
-import { fetchActiveTournament, createTournament, setActiveTournament, fetchAllTournaments, updateTournamentLogo } from "../features/tournaments/tournamentSlice";
-import { fetchQuestions, createQuestion, resolveQuestion, updateAnswerPhoto } from "../features/questions/questionsSlice";
+import { createMatch, updateMatch, fetchMatches, deleteMatch } from "../features/matches/matchesSlice";
+import { fetchActiveTournament, createTournament, setActiveTournament, fetchAllTournaments, updateTournamentLogo, deleteTournament } from "../features/tournaments/tournamentSlice";
+import { fetchQuestions, createQuestion, resolveQuestion, updateAnswerPhoto, deleteQuestion } from "../features/questions/questionsSlice";
 import { useAuth } from "../features/auth/useAuth";
 import { Navigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -255,6 +255,36 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteMatch = async (matchId: string) => {
+    if (!window.confirm("Ar tikrai norite ištrinti šias varžybas ir visus spėjimus?")) return;
+    try {
+      await dispatch(deleteMatch(matchId)).unwrap();
+      showToast("Varžybos ištrintos", "success");
+    } catch {
+      showToast("Nepavyko ištrinti varžybų", "error");
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!window.confirm("Ar tikrai norite ištrinti šį klausimą ir visus atsakymus?")) return;
+    try {
+      await dispatch(deleteQuestion(questionId)).unwrap();
+      showToast("Klausimas ištrintas", "success");
+    } catch {
+      showToast("Nepavyko ištrinti klausimo", "error");
+    }
+  };
+
+  const handleDeleteTournament = async (tournamentId: string, name: string) => {
+    if (!window.confirm(`Ar tikrai norite ištrinti turnyrą "${name}"?`)) return;
+    try {
+      await dispatch(deleteTournament(tournamentId)).unwrap();
+      showToast("Turnyras ištrintas", "success");
+    } catch (err) {
+      showToast(String(err), "error");
+    }
+  };
+
   return (
     <Layout>
       <div className="flex flex-col gap-8">
@@ -294,13 +324,22 @@ export default function AdminPage() {
                         </button>
                       )}
                       {!t.isActive && (
-                        <button
-                          onClick={() => handleSetActive(t._id)}
-                          className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer"
-                        >
-                          <Check size={14} />
-                          Aktyvuoti
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleSetActive(t._id)}
+                            className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer"
+                          >
+                            <Check size={14} />
+                            Aktyvuoti
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTournament(t._id, t.name)}
+                            className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 cursor-pointer transition-colors"
+                            title="Ištrinti turnyrą"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -618,14 +657,33 @@ export default function AdminPage() {
                         )}
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setResolvingQuestion(q._id)}
-                        className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer mt-1"
-                      >
-                        <Award size={13} />
-                        Išspręsti klausimą
-                      </button>
+                      <div className="flex items-center gap-3 mt-1">
+                        <button
+                          onClick={() => setResolvingQuestion(q._id)}
+                          className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline cursor-pointer"
+                        >
+                          <Award size={13} />
+                          Išspręsti klausimą
+                        </button>
+                        <button
+                          onClick={() => handleDeleteQuestion(q._id)}
+                          className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-600 cursor-pointer"
+                        >
+                          <Trash2 size={13} />
+                          Ištrinti
+                        </button>
+                      </div>
                     )
+                  )}
+                  {/* Delete resolved question */}
+                  {q.isResolved && (
+                    <button
+                      onClick={() => handleDeleteQuestion(q._id)}
+                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-600 cursor-pointer mt-1"
+                    >
+                      <Trash2 size={13} />
+                      Ištrinti klausimą
+                    </button>
                   )}
                 </div>
               ))}
@@ -738,6 +796,13 @@ export default function AdminPage() {
                       Įvesti rezultatą
                     </button>
                   )}
+                  <button
+                    onClick={() => handleDeleteMatch(m._id)}
+                    className="ml-auto p-1 text-gray-300 hover:text-red-600 rounded-lg hover:bg-red-50 cursor-pointer transition-colors"
+                    title="Ištrinti varžybas"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               ))}
           </div>
