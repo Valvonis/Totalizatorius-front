@@ -40,8 +40,8 @@ export default function QuestionCard({ question }: QuestionCardProps) {
       setAnswer("");
       setPlayerName("");
       if (tournament) {
-        dispatch(fetchQuestions(tournament._id));
-        dispatch(fetchLeaderboard(tournament._id));
+        dispatch(fetchQuestions({ tournamentId: tournament._id }));
+        dispatch(fetchLeaderboard({ tournamentId: tournament._id }));
       }
     } catch (err) {
       showToast(String(err), "error");

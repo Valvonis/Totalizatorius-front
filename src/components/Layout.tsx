@@ -64,9 +64,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const handleSwitchTournament = (id: string) => {
     dispatch(switchTournament(id));
-    dispatch(fetchMatches(id));
-    dispatch(fetchLeaderboard(id));
-    dispatch(fetchQuestions(id));
+    dispatch(fetchMatches({ tournamentId: id }));
+    dispatch(fetchLeaderboard({ tournamentId: id }));
+    dispatch(fetchQuestions({ tournamentId: id }));
   };
 
   return (

@@ -32,8 +32,8 @@ export default function PredictionModal({ matchId, onClose }: PredictionModalPro
     try {
       await dispatch(submitPrediction({ matchId: match._id, team1Goal, team2Goal })).unwrap();
       showToast("Spėjimas pateiktas!", "success");
-      dispatch(fetchMatches(tournament?._id));
-      dispatch(fetchLeaderboard(tournament?._id));
+      dispatch(fetchMatches({ tournamentId: tournament?._id }));
+      dispatch(fetchLeaderboard({ tournamentId: tournament?._id }));
       onClose();
       setTeam1Goal(0);
       setTeam2Goal(0);

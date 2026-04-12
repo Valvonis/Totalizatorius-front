@@ -16,10 +16,10 @@ const initialState: QuestionsState = {
 
 export const fetchQuestions = createAsyncThunk(
   "questions/fetchAll",
-  async (tournamentId?: string) => {
+  async ({ tournamentId, silent }: { tournamentId?: string; silent?: boolean } = {}) => {
     const params = tournamentId ? { tournamentId } : {};
     const { data } = await api.get<SpecialQuestion[]>("/questions", { params });
-    return data;
+    return { data, silent: !!silent };
   }
 );
 
@@ -101,12 +101,17 @@ const questionsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchQuestions.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchQuestions.pending, (state, action) => {
+        if (!action.meta.arg?.silent) {
+          state.loading = true;
+        }
       })
       .addCase(fetchQuestions.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        const newData = action.payload.data;
+        if (JSON.stringify(state.items) !== JSON.stringify(newData)) {
+          state.items = newData;
+        }
       })
       .addCase(fetchQuestions.rejected, (state, action) => {
         state.loading = false;

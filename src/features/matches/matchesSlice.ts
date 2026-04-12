@@ -16,10 +16,10 @@ const initialState: MatchesState = {
 
 export const fetchMatches = createAsyncThunk(
   "matches/fetchAll",
-  async (tournamentId?: string) => {
+  async ({ tournamentId, silent }: { tournamentId?: string; silent?: boolean } = {}) => {
     const params = tournamentId ? { tournamentId } : {};
     const { data } = await api.get<Match[]>("/matches", { params });
-    return data;
+    return { data, silent: !!silent };
   }
 );
 
@@ -53,13 +53,20 @@ const matchesSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchMatches.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchMatches.pending, (state, action) => {
+        // Only show loading spinner on initial load, not background refreshes
+        if (!action.meta.arg?.silent) {
+          state.loading = true;
+        }
         state.error = null;
       })
       .addCase(fetchMatches.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        // Only update if data actually changed — prevents unnecessary re-renders
+        const newData = action.payload.data;
+        if (JSON.stringify(state.items) !== JSON.stringify(newData)) {
+          state.items = newData;
+        }
       })
       .addCase(fetchMatches.rejected, (state, action) => {
         state.loading = false;

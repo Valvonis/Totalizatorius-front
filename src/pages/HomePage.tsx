@@ -24,17 +24,17 @@ export default function HomePage() {
 
   useEffect(() => {
     if (tournament) {
-      dispatch(fetchMatches(tournament._id));
-      dispatch(fetchLeaderboard(tournament._id));
-      dispatch(fetchQuestions(tournament._id));
+      dispatch(fetchMatches({ tournamentId: tournament._id }));
+      dispatch(fetchLeaderboard({ tournamentId: tournament._id }));
+      dispatch(fetchQuestions({ tournamentId: tournament._id }));
     }
   }, [dispatch, tournament]);
 
   const refreshData = useCallback(() => {
     if (tournament) {
-      dispatch(fetchMatches(tournament._id));
-      dispatch(fetchLeaderboard(tournament._id));
-      dispatch(fetchQuestions(tournament._id));
+      dispatch(fetchMatches({ tournamentId: tournament._id, silent: true }));
+      dispatch(fetchLeaderboard({ tournamentId: tournament._id, silent: true }));
+      dispatch(fetchQuestions({ tournamentId: tournament._id, silent: true }));
     }
   }, [dispatch, tournament]);
 

@@ -23,7 +23,7 @@ export default function LeaderboardPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (tournament) dispatch(fetchLeaderboard(tournament._id));
+    if (tournament) dispatch(fetchLeaderboard({ tournamentId: tournament._id }));
   }, [dispatch, tournament]);
 
   return (

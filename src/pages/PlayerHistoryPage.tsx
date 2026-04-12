@@ -45,8 +45,8 @@ export default function PlayerHistoryPage() {
 
   useEffect(() => {
     if (tournament) {
-      dispatch(fetchMatches(tournament._id));
-      dispatch(fetchLeaderboard(tournament._id));
+      dispatch(fetchMatches({ tournamentId: tournament._id }));
+      dispatch(fetchLeaderboard({ tournamentId: tournament._id }));
     }
   }, [dispatch, tournament]);
 

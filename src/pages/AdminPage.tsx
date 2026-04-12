@@ -86,8 +86,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (tournament) {
-      dispatch(fetchMatches(tournament._id));
-      dispatch(fetchQuestions(tournament._id));
+      dispatch(fetchMatches({ tournamentId: tournament._id }));
+      dispatch(fetchQuestions({ tournamentId: tournament._id }));
     }
   }, [dispatch, tournament]);
 
@@ -216,7 +216,7 @@ export default function AdminPage() {
       showToast("Nuotrauka atnaujinta!", "success");
       setEditingPhoto(null);
       setPhotoUrl("");
-      if (tournament) dispatch(fetchQuestions(tournament._id));
+      if (tournament) dispatch(fetchQuestions({ tournamentId: tournament._id }));
     } catch {
       showToast("Nepavyko atnaujinti nuotraukos", "error");
     }
@@ -236,7 +236,7 @@ export default function AdminPage() {
       setResolvingQuestion(null);
       setResolveAnswer("");
       setResolveImageUrl("");
-      if (tournament) dispatch(fetchQuestions(tournament._id));
+      if (tournament) dispatch(fetchQuestions({ tournamentId: tournament._id }));
     } catch {
       showToast("Nepavyko išspręsti klausimo", "error");
     }

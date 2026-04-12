@@ -16,10 +16,10 @@ const initialState: ScoreboardState = {
 
 export const fetchLeaderboard = createAsyncThunk(
   "scoreboard/fetch",
-  async (tournamentId?: string) => {
+  async ({ tournamentId, silent }: { tournamentId?: string; silent?: boolean } = {}) => {
     const params = tournamentId ? { tournamentId } : {};
     const { data } = await api.get<ScoreboardEntry[]>("/leaderboard", { params });
-    return data;
+    return { data, silent: !!silent };
   }
 );
 
@@ -29,12 +29,17 @@ const scoreboardSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchLeaderboard.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchLeaderboard.pending, (state, action) => {
+        if (!action.meta.arg?.silent) {
+          state.loading = true;
+        }
       })
       .addCase(fetchLeaderboard.fulfilled, (state, action) => {
         state.loading = false;
-        state.entries = action.payload;
+        const newData = action.payload.data;
+        if (JSON.stringify(state.entries) !== JSON.stringify(newData)) {
+          state.entries = newData;
+        }
       })
       .addCase(fetchLeaderboard.rejected, (state, action) => {
         state.loading = false;
