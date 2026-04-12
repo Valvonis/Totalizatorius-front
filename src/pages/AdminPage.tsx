@@ -96,6 +96,10 @@ export default function AdminPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!team1 || !team2 || !time || !tournament) return;
+    if (team1 === team2) {
+      showToast("Komandos negali būti vienodos!", "error");
+      return;
+    }
 
     try {
       await dispatch(createMatch({ tournamentId: tournament._id, team1, team2, time, stage: stage || undefined })).unwrap();
@@ -134,6 +138,10 @@ export default function AdminPage() {
 
   const handleSaveMatchDetails = async (matchId: string) => {
     if (!editTeam1 || !editTeam2 || !editTime) return;
+    if (editTeam1 === editTeam2) {
+      showToast("Komandos negali būti vienodos!", "error");
+      return;
+    }
 
     try {
       await dispatch(updateMatch({ id: matchId, team1: editTeam1, team2: editTeam2, time: editTime, stage: editStage || undefined })).unwrap();
