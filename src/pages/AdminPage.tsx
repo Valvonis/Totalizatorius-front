@@ -111,6 +111,7 @@ export default function AdminPage() {
 
   const handleSetResult = async (matchId: string) => {
     if (score1 === "" || score2 === "") return;
+    if (!window.confirm(`Ar tikrai norite įvesti rezultatą ${score1}:${score2}? Bus perskaičiuoti visi taškai.`)) return;
 
     try {
       await dispatch(updateMatch({ id: matchId, team1Score: Number(score1), team2Score: Number(score2) })).unwrap();
@@ -215,6 +216,7 @@ export default function AdminPage() {
 
   const handleResolveQuestion = async (questionId: string) => {
     if (!resolveAnswer) return;
+    if (!window.confirm(`Ar tikrai norite patvirtinti atsakymą "${resolveAnswer}"? Bus paskaičiuoti taškai.`)) return;
 
     try {
       await dispatch(resolveQuestion({
