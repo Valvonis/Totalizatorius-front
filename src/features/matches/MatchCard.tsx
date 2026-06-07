@@ -1,113 +1,14 @@
 import Flag from "../../components/Flag";
 import { useAuth } from "../auth/useAuth";
 import { formatMatchTime, timeFromNow, isMatchStarted, getMatchUrgency, getCountdown } from "../../utils/date";
-import { Clock, Check, Timer, Trophy, AlertTriangle, Star, Crown } from "lucide-react";
+import { Clock, Check, Timer, Trophy, AlertTriangle } from "lucide-react";
+import { pointsColor, pointsLabelLong, pointsBg } from "../../utils/points";
+import { getStageStyle, isKnockout } from "./stages";
 import type { Match } from "../../types";
 
 interface MatchCardProps {
   match: Match;
   onPredict: (matchId: string) => void;
-}
-
-function pointsColor(pts: number | null): string {
-  if (pts === null) return "text-[var(--card-text-muted)]";
-  if (pts === 5) return "text-[var(--color-points-5)]";
-  if (pts === 3) return "text-[var(--color-points-3)]";
-  if (pts === 1) return "text-[var(--color-points-1)]";
-  return "text-[var(--color-points-0)]";
-}
-
-function pointsLabel(pts: number | null): string {
-  if (pts === 5) return "Tikslus rezultatas!";
-  if (pts === 3) return "Teisingas skirtumas";
-  if (pts === 1) return "Teisingas nugalėtojas";
-  if (pts === 0) return "Neteisingas spėjimas";
-  return "";
-}
-
-function pointsBg(pts: number | null): string {
-  if (pts === null) return "";
-  if (pts === 5) return "bg-green-500/10";
-  if (pts === 3) return "bg-blue-500/10";
-  if (pts === 1) return "bg-orange-500/10";
-  return "";
-}
-
-type StageStyle = {
-  border: string;
-  glow: string;
-  badge: string;
-  scoreSize: string;
-  icon: React.ReactNode | null;
-};
-
-function getStageStyle(stage: string): StageStyle {
-  if (stage === "Finalas") {
-    return {
-      border: "ring-2 ring-yellow-400 border-yellow-400/50",
-      glow: "shadow-[0_0_20px_rgba(250,204,21,0.15)]",
-      badge: "bg-yellow-400 text-yellow-900",
-      scoreSize: "text-5xl",
-      icon: <Crown size={16} className="text-yellow-900" />,
-    };
-  }
-  if (stage === "Pusfinalis") {
-    return {
-      border: "ring-2 ring-yellow-400/60 border-yellow-400/30",
-      glow: "shadow-[0_0_12px_rgba(250,204,21,0.1)]",
-      badge: "bg-yellow-400/80 text-yellow-900",
-      scoreSize: "text-5xl",
-      icon: <Star size={14} className="text-yellow-900" />,
-    };
-  }
-  if (stage === "3 vietos rungtynės") {
-    return {
-      border: "ring-1 ring-amber-600/40 border-amber-600/20",
-      glow: "",
-      badge: "bg-amber-600/80 text-white",
-      scoreSize: "text-4xl",
-      icon: null,
-    };
-  }
-  if (stage === "Ketvirtfinalis") {
-    return {
-      border: "ring-1 ring-yellow-500/40 border-yellow-500/20",
-      glow: "",
-      badge: "bg-yellow-500/20 text-yellow-600",
-      scoreSize: "text-4xl",
-      icon: null,
-    };
-  }
-  if (stage === "Aštuntfinalis") {
-    return {
-      border: "border-l-4 border-l-indigo-400 border-[var(--card-border)]",
-      glow: "",
-      badge: "bg-indigo-500/15 text-indigo-500",
-      scoreSize: "text-4xl",
-      icon: null,
-    };
-  }
-  if (stage === "Šešioliktfinalis") {
-    return {
-      border: "border-l-[3px] border-l-blue-400 border-[var(--card-border)]",
-      glow: "",
-      badge: "bg-blue-500/15 text-blue-500",
-      scoreSize: "text-4xl",
-      icon: null,
-    };
-  }
-  // Group stage — default
-  return {
-    border: "border border-[var(--card-border)]",
-    glow: "",
-    badge: "bg-[var(--color-primary)]/20 text-[var(--color-primary-light)]",
-    scoreSize: "text-4xl",
-    icon: null,
-  };
-}
-
-function isKnockout(stage: string): boolean {
-  return ["Šešioliktfinalis", "Aštuntfinalis", "Ketvirtfinalis", "Pusfinalis", "3 vietos rungtynės", "Finalas"].includes(stage);
 }
 
 export default function MatchCard({ match, onPredict }: MatchCardProps) {
@@ -192,7 +93,7 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
                   <span className="font-bold text-sm text-[var(--card-text)]">
                     {pred.team1Goal}:{pred.team2Goal}
                   </span>
-                  <span className={`text-xs font-bold ${pointsColor(pred.points)}`} title={pointsLabel(pred.points)}>
+                  <span className={`text-xs font-bold ${pointsColor(pred.points)}`} title={pointsLabelLong(pred.points)}>
                     {pred.points !== null ? `+${pred.points}` : "-"}
                   </span>
                 </>

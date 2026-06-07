@@ -2,27 +2,12 @@ import { useState } from "react";
 import Flag from "../../components/Flag";
 import { useAuth } from "../auth/useAuth";
 import { formatTimeOnly } from "../../utils/date";
+import { pointsColor, pointsLabel } from "../../utils/points";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Match } from "../../types";
 
 interface MatchRowCompactProps {
   match: Match;
-}
-
-function pointsColor(pts: number | null): string {
-  if (pts === 5) return "text-[var(--color-points-5)]";
-  if (pts === 3) return "text-[var(--color-points-3)]";
-  if (pts === 1) return "text-[var(--color-points-1)]";
-  if (pts === 0) return "text-[var(--color-points-0)]";
-  return "text-[var(--card-text-muted)]";
-}
-
-function pointsLabel(pts: number | null): string {
-  if (pts === 5) return "Tikslus";
-  if (pts === 3) return "Skirtumas";
-  if (pts === 1) return "Nugalėtojas";
-  if (pts === 0) return "Neteisingai";
-  return "";
 }
 
 export default function MatchRowCompact({ match }: MatchRowCompactProps) {

@@ -10,6 +10,7 @@ interface ToastMessage {
 let toastId = 0;
 let addToastFn: ((msg: Omit<ToastMessage, "id">) => void) | null = null;
 
+// eslint-disable-next-line react-refresh/only-export-components -- imperative toast API lives with its container by design
 export function showToast(text: string, type: "error" | "success" = "error") {
   addToastFn?.({ text, type });
 }

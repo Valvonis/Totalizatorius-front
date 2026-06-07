@@ -4,6 +4,7 @@ import { useAuth } from "../auth/useAuth";
 import MatchCard from "./MatchCard";
 import MatchRowCompact from "./MatchRowCompact";
 import { isMatchStarted, isToday, getDateKey, formatDayHeader } from "../../utils/date";
+import { KNOCKOUT_STAGES } from "./stages";
 import { MatchCardSkeleton } from "../../components/ui/Skeleton";
 import { Calendar, History, Flame, AlertCircle, ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
 import type { Match } from "../../types";
@@ -18,12 +19,11 @@ function getStagesWithCounts(matches: Match[]): { stage: string; count: number }
   for (const m of matches) {
     if (m.stage) map.set(m.stage, (map.get(m.stage) || 0) + 1);
   }
-  const knockoutOrder = ["Šešioliktfinalis", "Aštuntfinalis", "Ketvirtfinalis", "Pusfinalis", "3 vietos rungtynės", "Finalas"];
   return Array.from(map.entries())
     .map(([stage, count]) => ({ stage, count }))
     .sort((a, b) => {
-      const aKO = knockoutOrder.indexOf(a.stage);
-      const bKO = knockoutOrder.indexOf(b.stage);
+      const aKO = KNOCKOUT_STAGES.indexOf(a.stage);
+      const bKO = KNOCKOUT_STAGES.indexOf(b.stage);
       if (aKO === -1 && bKO === -1) return a.stage.localeCompare(b.stage);
       if (aKO === -1) return -1;
       if (bKO === -1) return 1;

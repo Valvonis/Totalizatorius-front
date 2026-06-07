@@ -7,30 +7,8 @@ import { fetchActiveTournament } from "../features/tournaments/tournamentSlice";
 import Layout from "../components/Layout";
 import Flag from "../components/Flag";
 import { isMatchStarted } from "../utils/date";
-import { Target, TrendingUp, Trophy, XCircle, ArrowLeft, Flame, Award } from "lucide-react";
-
-function pointsColor(pts: number | null): string {
-  if (pts === 5) return "text-green-600 bg-green-50";
-  if (pts === 3) return "text-blue-600 bg-blue-50";
-  if (pts === 1) return "text-orange-500 bg-orange-50";
-  if (pts === 0) return "text-gray-400 bg-gray-50";
-  return "text-gray-300 bg-gray-50";
-}
-
-function pointsIcon(pts: number | null) {
-  if (pts === 5) return <Target size={13} />;
-  if (pts === 3) return <TrendingUp size={13} />;
-  if (pts === 1) return <Trophy size={13} />;
-  return <XCircle size={13} />;
-}
-
-function pointsLabel(pts: number | null): string {
-  if (pts === 5) return "Tikslus";
-  if (pts === 3) return "Skirtumas";
-  if (pts === 1) return "Nugalėtojas";
-  if (pts === 0) return "Neteisingai";
-  return "";
-}
+import { pointsBadgeClasses, pointsIcon, pointsLabel } from "../utils/points";
+import { Target, TrendingUp, ArrowLeft, Flame, Award } from "lucide-react";
 
 export default function PlayerHistoryPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -185,7 +163,7 @@ export default function PlayerHistoryPage() {
                   </div>
 
                   {/* Points badge */}
-                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold min-w-[80px] justify-center ${pointsColor(prediction.points)}`}>
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold min-w-[80px] justify-center ${pointsBadgeClasses(prediction.points)}`}>
                     {pointsIcon(prediction.points)}
                     <span>{prediction.points !== null ? `+${prediction.points}` : "-"}</span>
                     <span className="font-medium max-sm:hidden">{pointsLabel(prediction.points)}</span>
