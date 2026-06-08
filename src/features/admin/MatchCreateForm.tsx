@@ -7,13 +7,15 @@ import { localTimeToISO } from "../../utils/date";
 import { showToast } from "../../components/ui/Toast";
 import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
-import { Plus } from "lucide-react";
+import BulkMatchImport from "./BulkMatchImport";
+import { Plus, FileText } from "lucide-react";
 
 export default function MatchCreateForm() {
   const dispatch = useAppDispatch();
   const tournament = useAppSelector((s) => s.tournament.active);
   const countries = getCountryNames();
 
+  const [mode, setMode] = useState<"single" | "bulk">("single");
   const [team1, setTeam1] = useState("");
   const [team2, setTeam2] = useState("");
   const [time, setTime] = useState("");
@@ -41,7 +43,35 @@ export default function MatchCreateForm() {
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-4">Sukurti varžybas</h2>
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <h2 className="text-xl font-bold">Sukurti varžybas</h2>
+        <div className="flex bg-gray-100 rounded-xl p-0.5 text-sm font-medium">
+          <button
+            type="button"
+            onClick={() => setMode("single")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${
+              mode === "single" ? "bg-white shadow text-[var(--color-primary)]" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <Plus size={15} />
+            Po vieną
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("bulk")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${
+              mode === "bulk" ? "bg-white shadow text-[var(--color-primary)]" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <FileText size={15} />
+            Sąrašu
+          </button>
+        </div>
+      </div>
+
+      {mode === "bulk" ? (
+        <BulkMatchImport />
+      ) : (
       <form onSubmit={handleCreate} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
           <FormSelect label="Komanda 1" value={team1} onChange={(e) => setTeam1(e.target.value)} required>
@@ -76,6 +106,7 @@ export default function MatchCreateForm() {
           Sukurti
         </button>
       </form>
+      )}
     </div>
   );
 }
