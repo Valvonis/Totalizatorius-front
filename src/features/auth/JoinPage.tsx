@@ -5,6 +5,7 @@ import { login, joinLeague, clearError } from "./authSlice";
 import api from "../../api/client";
 import type { Player } from "../../types";
 import { Trophy, Loader2, UserPlus, Users } from "lucide-react";
+import PlayerPicker from "./PlayerPicker";
 
 interface LeagueInfo {
   name: string;
@@ -37,6 +38,7 @@ export default function JoinPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [selectedSlug, setSelectedSlug] = useState("");
   const [pin, setPin] = useState("");
+  const lastSlug = localStorage.getItem("lastPlayerSlug");
 
   useEffect(() => {
     if (isLoggedIn) navigate("/");
@@ -53,7 +55,12 @@ export default function JoinPage() {
     if (mode === "returning") {
       api
         .get<Player[]>(`/players/by-league/${leagueSlug}`)
-        .then(({ data }) => setPlayers(data))
+        .then(({ data }) => {
+          setPlayers(data);
+          // Pre-select whoever last used this device, so returning is just "enter PIN".
+          const last = localStorage.getItem("lastPlayerSlug");
+          if (last && data.some((p) => p.slug === last)) setSelectedSlug(last);
+        })
         .catch(() => setPlayers([]));
     }
   }, [mode, leagueSlug]);
@@ -192,22 +199,12 @@ export default function JoinPage() {
           {players.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-4">Dalyvių dar nėra.</p>
           ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {players.map((p) => (
-                <button
-                  key={p.slug}
-                  type="button"
-                  onClick={() => setSelectedSlug(p.slug)}
-                  className={`py-3.5 px-2 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                    selectedSlug === p.slug
-                      ? "bg-[var(--color-primary)] text-white shadow-lg scale-[1.03]"
-                      : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
-                  }`}
-                >
-                  {p.name}
-                </button>
-              ))}
-            </div>
+            <PlayerPicker
+              players={players}
+              selectedSlug={selectedSlug}
+              onSelect={setSelectedSlug}
+              lastSlug={lastSlug}
+            />
           )}
           <input
             type="password"

@@ -19,6 +19,11 @@ type AuthResponse = { token: string; player: Player; league: League | null };
 function persistSession(data: { token?: string; player: Player; league: League | null }) {
   if (data.token) localStorage.setItem("token", data.token);
   localStorage.setItem("player", JSON.stringify(data.player));
+  // Remember who last logged in on this device so the login/join screens can
+  // pre-select them — essential once a league has dozens of members. Kept on
+  // logout (like lastLeagueSlug) so the next visit on a personal phone is just
+  // "enter PIN".
+  if (data.player.slug) localStorage.setItem("lastPlayerSlug", data.player.slug);
   if (data.league) {
     localStorage.setItem("league", JSON.stringify(data.league));
     // Breadcrumb for the login screen after logout / token expiry: which group
