@@ -52,6 +52,14 @@ export default function MatchList({ onPredict }: MatchListProps) {
   const dispatch = useAppDispatch();
   const { items, loading, error } = useAppSelector((s) => s.matches);
   const tournament = useAppSelector((s) => s.tournament.active);
+  const scoreboardEntries = useAppSelector((s) => s.scoreboard.entries);
+
+  // Full league roster (id + name), already loaded here via fetchLeaderboard. Passed to each
+  // card so upcoming cards can show "X / Y spėjo" and name who's still missing.
+  const roster = useMemo(
+    () => scoreboardEntries.map((e) => ({ id: e.playerId, name: e.playerName })),
+    [scoreboardEntries]
+  );
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [showAllPast, setShowAllPast] = useState(false);
   const [pastView, setPastView] = useState<"compact" | "cards">(() => {
@@ -170,7 +178,7 @@ export default function MatchList({ onPredict }: MatchListProps) {
           </h2>
           <div className="grid grid-cols-2 max-md:grid-cols-1 gap-4">
             {todayMatches.map((m) => (
-              <MatchCard key={m._id} match={m} onPredict={onPredict} />
+              <MatchCard key={m._id} match={m} onPredict={onPredict} roster={roster} />
             ))}
           </div>
         </section>
@@ -188,7 +196,7 @@ export default function MatchList({ onPredict }: MatchListProps) {
               <h3 className="text-white/60 text-sm font-medium mb-2 px-1 capitalize">{day.label}</h3>
               <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
                 {day.matches.map((m) => (
-                  <MatchCard key={m._id} match={m} onPredict={onPredict} />
+                  <MatchCard key={m._id} match={m} onPredict={onPredict} roster={roster} />
                 ))}
               </div>
             </div>
@@ -226,7 +234,7 @@ export default function MatchList({ onPredict }: MatchListProps) {
               ) : (
                 <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
                   {day.matches.map((m) => (
-                    <MatchCard key={m._id} match={m} onPredict={onPredict} />
+                    <MatchCard key={m._id} match={m} onPredict={onPredict} roster={roster} />
                   ))}
                 </div>
               )}

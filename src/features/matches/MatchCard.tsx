@@ -10,12 +10,18 @@ import type { Match } from "../../types";
 interface MatchCardProps {
   match: Match;
   onPredict: (matchId: string) => void;
+  // Full league roster (id + name). Drives the pre-kickoff "X / Y spėjo" summary and the
+  // list of who's still missing. Optional so the card degrades to a bare count if the
+  // leaderboard hasn't loaded yet.
+  roster?: { id: string; name: string }[];
 }
 
-// Above this many predictions the grid collapses (keeps cards short for big leagues).
+// Above this many revealed predictions the started-card grid collapses behind a toggle.
 const PREDICTION_CAP = 6;
+// At/below this many players still missing, name them; above it, just show the count.
+const NAME_THRESHOLD = 6;
 
-export default function MatchCard({ match, onPredict }: MatchCardProps) {
+export default function MatchCard({ match, onPredict, roster = [] }: MatchCardProps) {
   const { player } = useAuth();
   const [showAll, setShowAll] = useState(false);
   const started = isMatchStarted(match.time);
@@ -23,15 +29,28 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
     (p) => p.playerId === player?.id
   );
 
-  // Always surface the current player's own prediction first, then cap the rest.
+  // Started card: own prediction first, then the rest by points (highest first, unscored last).
   const orderedPredictions = useMemo(() => {
     const mine = match.predictions.filter((p) => p.playerId === player?.id);
-    const others = match.predictions.filter((p) => p.playerId !== player?.id);
+    const others = match.predictions
+      .filter((p) => p.playerId !== player?.id)
+      .sort((a, b) => (b.points ?? -1) - (a.points ?? -1));
     return [...mine, ...others];
   }, [match.predictions, player?.id]);
   const visiblePredictions = showAll ? orderedPredictions : orderedPredictions.slice(0, PREDICTION_CAP);
   const hiddenCount = orderedPredictions.length - visiblePredictions.length;
   const canPredict = !started && !currentPlayerPredicted;
+
+  // Upcoming card: picks are hidden until kickoff, so show progress instead. The roster is
+  // the denominator; everyone not in match.predictions is still waiting ("Tu" surfaced first).
+  const guessedCount = match.predictions.length;
+  const knownRoster = roster.length > 0;
+  const denom = Math.max(roster.length, guessedCount);
+  const guessedIds = new Set(match.predictions.map((p) => p.playerId));
+  const remainingNames = roster
+    .filter((r) => !guessedIds.has(r.id))
+    .map((r) => (r.id === player?.id ? "Tu" : r.name))
+    .sort((a, b) => (a === "Tu" ? -1 : b === "Tu" ? 1 : 0));
   const stageStyle = getStageStyle(match.stage || "");
   const knockout = isKnockout(match.stage || "");
   const team1Won = match.team1Score !== null && match.team2Score !== null && match.team1Score > match.team2Score;
@@ -98,54 +117,74 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
 
       {/* Predictions */}
       <div className="px-4 pb-4">
-        <div className="grid grid-cols-3 gap-2 text-center">
-          {visiblePredictions.map((pred) => (
-            <div key={pred.id} className={`flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg ${started ? pointsBg(pred.points) : ""}`}>
-              <span className="text-[10px] text-[var(--card-text-muted)] font-medium uppercase tracking-wide">{pred.playerName}</span>
-              {started ? (
-                <>
+        {started ? (
+          <>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {visiblePredictions.map((pred) => (
+                <div key={pred.id} className={`flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg ${pointsBg(pred.points)}`}>
+                  <span className="text-[10px] text-[var(--card-text-muted)] font-medium uppercase tracking-wide">{pred.playerName}</span>
                   <span className="font-bold text-sm text-[var(--card-text)]">
                     {pred.team1Goal}:{pred.team2Goal}
                   </span>
                   <span className={`text-xs font-bold ${pointsColor(pred.points)}`} title={pointsLabelLong(pred.points)}>
                     {pred.points !== null ? `+${pred.points}` : "-"}
                   </span>
-                </>
-              ) : (
-                <span className="text-green-500">
-                  <Check size={16} />
-                </span>
+                </div>
+              ))}
+            </div>
+            {orderedPredictions.length > PREDICTION_CAP && (
+              <button
+                onClick={() => setShowAll((v) => !v)}
+                className="w-full mt-2 flex items-center justify-center gap-1 py-1 text-[var(--card-text-muted)] hover:text-[var(--card-text)] text-xs cursor-pointer transition-colors"
+              >
+                {showAll ? (
+                  <>
+                    <ChevronUp size={13} />
+                    Rodyti mažiau
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={13} />
+                    + dar {hiddenCount}
+                  </>
+                )}
+              </button>
+            )}
+          </>
+        ) : (
+          /* Upcoming: picks stay hidden until kickoff — show who's locked in vs still missing. */
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-medium text-[var(--card-text-secondary)] shrink-0 flex items-center gap-1">
+                Spėjo {guessedCount}{knownRoster ? ` / ${denom}` : ""}
+                {knownRoster && remainingNames.length === 0 && <Check size={13} className="text-green-500" />}
+              </span>
+              {knownRoster && (
+                <div className="flex-1 h-1.5 bg-[var(--card-border)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-500"
+                    style={{ width: `${denom > 0 ? (guessedCount / denom) * 100 : 0}%` }}
+                  />
+                </div>
               )}
             </div>
-          ))}
-          {/* Waiting slots (only meaningful for small leagues) */}
-          {!started &&
-            Array.from({ length: Math.max(0, 3 - match.predictions.length) }).map((_, i) => (
-              <div key={`empty-${i}`} className="flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg">
-                <span className="text-[10px] text-[var(--card-text-muted)] font-medium">---</span>
-                <span className="text-[var(--card-text-muted)] animate-pulse-soft">
-                  <Timer size={15} />
+            {knownRoster && remainingNames.length > 0 && (
+              <div className="flex items-start gap-1 text-[11px] text-[var(--card-text-muted)]">
+                <Timer size={12} className="animate-pulse-soft shrink-0 mt-0.5" />
+                <span>
+                  {remainingNames.length <= NAME_THRESHOLD
+                    ? `dar laukiama: ${remainingNames.join(" · ")}`
+                    : `dar nespėjo ${remainingNames.length}`}
                 </span>
               </div>
-            ))}
-        </div>
-        {(hiddenCount > 0 || showAll) && orderedPredictions.length > PREDICTION_CAP && (
-          <button
-            onClick={() => setShowAll((v) => !v)}
-            className="w-full mt-2 flex items-center justify-center gap-1 py-1 text-[var(--card-text-muted)] hover:text-[var(--card-text)] text-xs cursor-pointer transition-colors"
-          >
-            {showAll ? (
-              <>
-                <ChevronUp size={13} />
-                Rodyti mažiau
-              </>
-            ) : (
-              <>
-                <ChevronDown size={13} />
-                + dar {hiddenCount}
-              </>
             )}
-          </button>
+            {knownRoster && remainingNames.length === 0 && (
+              <div className="flex items-center gap-1 text-[11px] text-green-500 font-medium">
+                <Check size={12} />
+                <span>Visi spėjo</span>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
