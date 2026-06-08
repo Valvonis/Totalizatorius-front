@@ -124,7 +124,7 @@ export default function QuestionManager({ leagueId }: { leagueId?: string | null
                     {q.type === "country" ? "Šalis" : "Žaidėjas"}
                   </span>
                   <span className="font-bold text-sm">{q.question}</span>
-                  <span className="text-xs text-[var(--color-accent)] font-bold">+{q.pointValue}</span>
+                  <span className="text-xs font-bold text-amber-950 bg-[var(--color-accent)] px-2 py-0.5 rounded-full">+{q.pointValue}</span>
                 </div>
                 {q.isResolved && (
                   <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">

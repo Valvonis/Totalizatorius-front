@@ -54,7 +54,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
     <div className="rounded-2xl shadow-md p-5 flex flex-col gap-4 animate-fade-up border border-[var(--card-border)]" style={{ background: "var(--card-bg)" }}>
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-bold text-[var(--card-text)] text-sm">{question.question}</h3>
-        <span className="text-xs font-bold text-[var(--color-accent)] bg-yellow-50 px-2.5 py-1 rounded-full shrink-0">
+        <span className="text-xs font-bold text-amber-950 bg-[var(--color-accent)] px-2.5 py-1 rounded-full shrink-0">
           +{question.pointValue}
         </span>
       </div>
