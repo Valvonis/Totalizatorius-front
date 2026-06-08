@@ -7,7 +7,7 @@ import { showConfirm } from "../../components/ui/ConfirmDialog";
 import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
 import InlineSaveCancel from "./InlineSaveCancel";
-import { Plus, Users, Trash2, Copy, KeyRound } from "lucide-react";
+import { Plus, Users, Trash2, Copy, KeyRound, Pencil } from "lucide-react";
 
 export default function LeagueManager() {
   const dispatch = useAppDispatch();
@@ -23,6 +23,10 @@ export default function LeagueManager() {
 
   const [editingPin, setEditingPin] = useState<string | null>(null);
   const [pinValue, setPinValue] = useState("");
+
+  const [editingInfo, setEditingInfo] = useState<string | null>(null);
+  const [nameValue, setNameValue] = useState("");
+  const [logoValue, setLogoValue] = useState("");
 
   // Default the championship to the active one (derived — no effect needed).
   const selectedTournamentId = lTournamentId || activeTournament?._id || "";
@@ -53,6 +57,17 @@ export default function LeagueManager() {
       setPinValue("");
     } catch {
       showToast("Nepavyko atnaujinti PIN", "error");
+    }
+  };
+
+  const handleSaveInfo = async (id: string) => {
+    if (!nameValue.trim()) return;
+    try {
+      await dispatch(updateLeague({ id, name: nameValue.trim(), logoUrl: logoValue })).unwrap();
+      showToast("Grupė atnaujinta!", "success");
+      setEditingInfo(null);
+    } catch {
+      showToast("Nepavyko atnaujinti grupės", "error");
     }
   };
 
@@ -116,7 +131,14 @@ export default function LeagueManager() {
                     Nuoroda
                   </button>
                   <button
-                    onClick={() => { setEditingPin(l._id); setPinValue(""); }}
+                    onClick={() => { setEditingInfo(l._id); setNameValue(l.name); setLogoValue(l.logoUrl || ""); setEditingPin(null); }}
+                    className="p-1.5 text-gray-400 hover:text-[var(--color-primary)] rounded-lg hover:bg-blue-50 cursor-pointer transition-colors"
+                    title="Keisti pavadinimą / logo"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={() => { setEditingPin(l._id); setPinValue(""); setEditingInfo(null); }}
                     className="p-1.5 text-gray-400 hover:text-orange-600 rounded-lg hover:bg-orange-50 cursor-pointer transition-colors"
                     title="Keisti grupės PIN"
                   >
@@ -135,6 +157,33 @@ export default function LeagueManager() {
               <div className="text-[11px] text-gray-400 font-mono break-all">
                 {window.location.origin}/join/{l.slug}
               </div>
+
+              {editingInfo === l._id && (
+                <div className="flex flex-col gap-2">
+                  <FormInput
+                    type="text"
+                    placeholder="Grupės pavadinimas"
+                    value={nameValue}
+                    onChange={(e) => setNameValue(e.target.value)}
+                    compact
+                  />
+                  <div className="flex items-center gap-2">
+                    <FormInput
+                      type="url"
+                      placeholder="Logo URL (neprivaloma)"
+                      value={logoValue}
+                      onChange={(e) => setLogoValue(e.target.value)}
+                      compact
+                      className="flex-1"
+                    />
+                    <InlineSaveCancel
+                      onSave={() => handleSaveInfo(l._id)}
+                      onCancel={() => setEditingInfo(null)}
+                      saveDisabled={!nameValue.trim()}
+                    />
+                  </div>
+                </div>
+              )}
 
               {editingPin === l._id && (
                 <div className="flex items-center gap-2">
