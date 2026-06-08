@@ -5,6 +5,7 @@ import { ALL_STAGES } from "../matches/stages";
 import { getCountryNames } from "../../utils/countries";
 import { isMatchStarted, formatMatchTime, localTimeToISO } from "../../utils/date";
 import { showToast } from "../../components/ui/Toast";
+import { showConfirm } from "../../components/ui/ConfirmDialog";
 import Flag from "../../components/Flag";
 import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
@@ -31,7 +32,12 @@ export default function MatchAdminList() {
 
   const handleSetResult = async (matchId: string) => {
     if (score1 === "" || score2 === "") return;
-    if (!window.confirm(`Ar tikrai norite įvesti rezultatą ${score1}:${score2}? Bus perskaičiuoti visi taškai.`)) return;
+    if (!(await showConfirm({
+      title: "Įvesti rezultatą",
+      message: `Ar tikrai norite įvesti rezultatą ${score1}:${score2}? Bus perskaičiuoti visi taškai.`,
+      confirmText: "Įvesti",
+      variant: "primary",
+    }))) return;
 
     try {
       await dispatch(updateMatch({ id: matchId, team1Score: Number(score1), team2Score: Number(score2) })).unwrap();
@@ -69,7 +75,12 @@ export default function MatchAdminList() {
   };
 
   const handleDeleteMatch = async (matchId: string) => {
-    if (!window.confirm("Ar tikrai norite ištrinti šias varžybas ir visus spėjimus?")) return;
+    if (!(await showConfirm({
+      title: "Ištrinti varžybas",
+      message: "Ar tikrai norite ištrinti šias varžybas ir visus spėjimus?",
+      confirmText: "Ištrinti",
+      variant: "danger",
+    }))) return;
     try {
       await dispatch(deleteMatch(matchId)).unwrap();
       showToast("Varžybos ištrintos", "success");

@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../hooks";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchActiveTournament } from "../features/tournaments/tournamentSlice";
 import Layout from "../components/Layout";
+import ErrorState from "../components/ui/ErrorState";
 import { Trophy, Medal, Target, TrendingUp, XCircle, BarChart3, Calendar, ChevronRight } from "lucide-react";
 import { dayjs } from "../utils/date";
 
@@ -16,7 +17,7 @@ const rankStyles = [
 export default function LeaderboardPage() {
   const dispatch = useAppDispatch();
   const tournament = useAppSelector((s) => s.tournament.active);
-  const { entries, loading } = useAppSelector((s) => s.scoreboard);
+  const { entries, loading, error } = useAppSelector((s) => s.scoreboard);
 
   useEffect(() => {
     dispatch(fetchActiveTournament());
@@ -50,7 +51,14 @@ export default function LeaderboardPage() {
           </div>
         )}
 
-        {!loading && entries.length === 0 && (
+        {!loading && error && entries.length === 0 && (
+          <ErrorState
+            message="Nepavyko įkelti lentelės."
+            onRetry={() => tournament && dispatch(fetchLeaderboard({ tournamentId: tournament._id }))}
+          />
+        )}
+
+        {!loading && !error && entries.length === 0 && (
           <p className="text-white/50 text-center py-12">Dar nėra rezultatų.</p>
         )}
 

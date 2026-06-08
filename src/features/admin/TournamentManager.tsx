@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { createTournament, setActiveTournament, updateTournamentLogo, deleteTournament } from "../tournaments/tournamentSlice";
 import { slugify } from "../../utils/slug";
 import { showToast } from "../../components/ui/Toast";
+import { showConfirm } from "../../components/ui/ConfirmDialog";
 import FormInput from "../../components/ui/FormInput";
 import InlineSaveCancel from "./InlineSaveCancel";
 import { Plus, Trophy, Check, Trash2 } from "lucide-react";
@@ -61,7 +62,12 @@ export default function TournamentManager() {
   };
 
   const handleDeleteTournament = async (tournamentId: string, name: string) => {
-    if (!window.confirm(`Ar tikrai norite ištrinti turnyrą "${name}"?`)) return;
+    if (!(await showConfirm({
+      title: "Ištrinti turnyrą",
+      message: `Ar tikrai norite ištrinti turnyrą "${name}"?`,
+      confirmText: "Ištrinti",
+      variant: "danger",
+    }))) return;
     try {
       await dispatch(deleteTournament(tournamentId)).unwrap();
       showToast("Turnyras ištrintas", "success");

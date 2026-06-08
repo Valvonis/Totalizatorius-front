@@ -33,6 +33,7 @@ const scoreboardSlice = createSlice({
         if (!action.meta.arg?.silent) {
           state.loading = true;
         }
+        state.error = null;
       })
       .addCase(fetchLeaderboard.fulfilled, (state, action) => {
         state.loading = false;

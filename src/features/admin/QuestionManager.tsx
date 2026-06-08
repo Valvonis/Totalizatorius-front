@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { fetchQuestions, createQuestion, resolveQuestion, updateAnswerPhoto, deleteQuestion } from "../questions/questionsSlice";
 import { getCountryNames } from "../../utils/countries";
 import { showToast } from "../../components/ui/Toast";
+import { showConfirm } from "../../components/ui/ConfirmDialog";
 import Flag from "../../components/Flag";
 import FormInput from "../../components/ui/FormInput";
 import FormSelect from "../../components/ui/FormSelect";
@@ -63,7 +64,12 @@ export default function QuestionManager() {
 
   const handleResolveQuestion = async (questionId: string) => {
     if (!resolveAnswer) return;
-    if (!window.confirm(`Ar tikrai norite patvirtinti atsakymą "${resolveAnswer}"? Bus paskaičiuoti taškai.`)) return;
+    if (!(await showConfirm({
+      title: "Patvirtinti atsakymą",
+      message: `Ar tikrai norite patvirtinti atsakymą "${resolveAnswer}"? Bus paskaičiuoti taškai.`,
+      confirmText: "Patvirtinti",
+      variant: "primary",
+    }))) return;
 
     try {
       await dispatch(resolveQuestion({
@@ -82,7 +88,12 @@ export default function QuestionManager() {
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
-    if (!window.confirm("Ar tikrai norite ištrinti šį klausimą ir visus atsakymus?")) return;
+    if (!(await showConfirm({
+      title: "Ištrinti klausimą",
+      message: "Ar tikrai norite ištrinti šį klausimą ir visus atsakymus?",
+      confirmText: "Ištrinti",
+      variant: "danger",
+    }))) return;
     try {
       await dispatch(deleteQuestion(questionId)).unwrap();
       showToast("Klausimas ištrintas", "success");

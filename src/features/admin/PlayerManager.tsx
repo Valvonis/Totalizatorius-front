@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../../api/client";
 import { slugify } from "../../utils/slug";
 import { showToast } from "../../components/ui/Toast";
+import { showConfirm } from "../../components/ui/ConfirmDialog";
 import FormInput from "../../components/ui/FormInput";
 import InlineSaveCancel from "./InlineSaveCancel";
 import { Plus, Users, Shield, ShieldOff, KeyRound, Trash2 } from "lucide-react";
@@ -64,7 +65,12 @@ export default function PlayerManager() {
   };
 
   const handleDeletePlayer = async (playerId: string, playerName: string) => {
-    if (!window.confirm(`Ar tikrai norite ištrinti žaidėją "${playerName}"?`)) return;
+    if (!(await showConfirm({
+      title: "Ištrinti žaidėją",
+      message: `Ar tikrai norite ištrinti žaidėją "${playerName}"?`,
+      confirmText: "Ištrinti",
+      variant: "danger",
+    }))) return;
     try {
       await api.delete(`/players/${playerId}`);
       showToast("Žaidėjas ištrintas", "success");

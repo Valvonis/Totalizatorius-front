@@ -6,6 +6,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import PlayerHistoryPage from "./pages/PlayerHistoryPage";
 import AdminPage from "./pages/AdminPage";
 import ToastContainer from "./components/ui/Toast";
+import ConfirmDialog from "./components/ui/ConfirmDialog";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isLoggedIn } = useAuth();
@@ -17,6 +18,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ToastContainer />
+      <ConfirmDialog />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route

@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
-import { useAppSelector } from "../../hooks";
-import { useAuth } from "../auth/useAuth";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import MatchCard from "./MatchCard";
 import MatchRowCompact from "./MatchRowCompact";
+import PredictionNudge from "../predictions/PredictionNudge";
+import { fetchMatches } from "./matchesSlice";
 import { isMatchStarted, isToday, getDateKey, formatDayHeader } from "../../utils/date";
 import { KNOCKOUT_STAGES } from "./stages";
 import { MatchCardSkeleton } from "../../components/ui/Skeleton";
-import { Calendar, History, Flame, AlertCircle, ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
+import ErrorState from "../../components/ui/ErrorState";
+import { Calendar, History, Flame, ChevronDown, ChevronUp, LayoutGrid, List } from "lucide-react";
 import type { Match } from "../../types";
 
 interface MatchListProps {
@@ -47,8 +49,9 @@ function groupByDate(matches: Match[]): { date: string; label: string; matches: 
 }
 
 export default function MatchList({ onPredict }: MatchListProps) {
-  const { items, loading } = useAppSelector((s) => s.matches);
-  const { player } = useAuth();
+  const dispatch = useAppDispatch();
+  const { items, loading, error } = useAppSelector((s) => s.matches);
+  const tournament = useAppSelector((s) => s.tournament.active);
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [showAllPast, setShowAllPast] = useState(false);
   const [pastView, setPastView] = useState<"compact" | "cards">(() => {
@@ -61,7 +64,7 @@ export default function MatchList({ onPredict }: MatchListProps) {
     localStorage.setItem("past-view", next);
   };
 
-  const { todayMatches, upcoming, pastDays, stagesWithCounts, needsPrediction, totalPlayed, totalMatches } = useMemo(() => {
+  const { todayMatches, upcoming, pastDays, stagesWithCounts, totalPlayed, totalMatches } = useMemo(() => {
     let filtered = items;
     if (stageFilter) {
       filtered = items.filter((m) => m.stage === stageFilter);
@@ -72,14 +75,11 @@ export default function MatchList({ onPredict }: MatchListProps) {
     const past = filtered.filter((m) => isMatchStarted(m.time) && !isToday(m.time)).reverse();
     const pastDays = groupByDate(past);
     const stagesWithCounts = getStagesWithCounts(items);
-    const needsPrediction = filtered.filter(
-      (m) => !isMatchStarted(m.time) && !m.predictions.some((p) => p.playerId === player?.id)
-    );
     const totalPlayed = items.filter((m) => m.team1Score !== null).length;
     const totalMatches = items.length;
 
-    return { todayMatches, upcoming, pastDays, stagesWithCounts, needsPrediction, totalPlayed, totalMatches };
-  }, [items, stageFilter, player]);
+    return { todayMatches, upcoming, pastDays, stagesWithCounts, totalPlayed, totalMatches };
+  }, [items, stageFilter]);
 
   if (loading) {
     return (
@@ -91,6 +91,15 @@ export default function MatchList({ onPredict }: MatchListProps) {
           ))}
         </div>
       </div>
+    );
+  }
+
+  if (error && items.length === 0) {
+    return (
+      <ErrorState
+        message="Nepavyko įkelti varžybų."
+        onRetry={() => tournament && dispatch(fetchMatches({ tournamentId: tournament._id }))}
+      />
     );
   }
 
@@ -149,13 +158,8 @@ export default function MatchList({ onPredict }: MatchListProps) {
         )}
       </div>
 
-      {/* Needs prediction alert */}
-      {needsPrediction.length > 0 && !stageFilter && (
-        <div className="flex items-center gap-2 bg-amber-500/15 border border-amber-500/20 text-amber-400 rounded-xl px-4 py-2.5 text-sm">
-          <AlertCircle size={16} className="shrink-0" />
-          <span>Turite <strong>{needsPrediction.length}</strong> {needsPrediction.length === 1 ? "varžybą" : "varžybas"} be spėjimo</span>
-        </div>
-      )}
+      {/* Prediction nudge */}
+      <PredictionNudge onPredict={onPredict} />
 
       {/* Today's matches */}
       {todayMatches.length > 0 && (
