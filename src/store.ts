@@ -5,6 +5,7 @@ import scoreboardReducer from "./features/scoreboard/scoreboardSlice";
 import questionsReducer from "./features/questions/questionsSlice";
 import tournamentReducer from "./features/tournaments/tournamentSlice";
 import predictionsReducer from "./features/predictions/predictionsSlice";
+import leaguesReducer from "./features/leagues/leagueSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     questions: questionsReducer,
     tournament: tournamentReducer,
     predictions: predictionsReducer,
+    leagues: leaguesReducer,
   },
 });
 

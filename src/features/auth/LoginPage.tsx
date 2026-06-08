@@ -6,6 +6,9 @@ import api from "../../api/client";
 import type { Player } from "../../types";
 import { Trophy, Loader2 } from "lucide-react";
 
+// The original friend group logs in here; new groups use /join/:leagueSlug.
+const ORIGINAL_LEAGUE_SLUG = "original";
+
 export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -24,7 +27,10 @@ export default function LoginPage() {
   }, [isLoggedIn, navigate]);
 
   useEffect(() => {
-    api.get<Player[]>("/players").then(({ data }) => setPlayers(data));
+    api
+      .get<Player[]>(`/players/by-league/${ORIGINAL_LEAGUE_SLUG}`)
+      .then(({ data }) => setPlayers(data))
+      .catch(() => setPlayers([]));
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

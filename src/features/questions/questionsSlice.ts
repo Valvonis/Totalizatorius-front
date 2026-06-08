@@ -16,8 +16,10 @@ const initialState: QuestionsState = {
 
 export const fetchQuestions = createAsyncThunk(
   "questions/fetchAll",
-  async ({ tournamentId, silent }: { tournamentId?: string; silent?: boolean } = {}) => {
-    const params = tournamentId ? { tournamentId } : {};
+  async ({ tournamentId, leagueId, silent }: { tournamentId?: string; leagueId?: string; silent?: boolean } = {}) => {
+    const params: Record<string, string> = {};
+    if (tournamentId) params.tournamentId = tournamentId;
+    if (leagueId) params.leagueId = leagueId; // super-admin only — honored server-side
     const { data } = await api.get<SpecialQuestion[]>("/questions", { params });
     return { data, silent: !!silent };
   }
@@ -26,11 +28,15 @@ export const fetchQuestions = createAsyncThunk(
 export const createQuestion = createAsyncThunk(
   "questions/create",
   async (
-    { tournamentId, question, type, pointValue }: { tournamentId: string; question: string; type: "country" | "player"; pointValue?: number },
+    { tournamentId, question, type, pointValue, leagueId }: { tournamentId: string; question: string; type: "country" | "player"; pointValue?: number; leagueId?: string },
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.post("/questions", { tournamentId, question, type, pointValue });
+      const { data } = await api.post(
+        "/questions",
+        { tournamentId, question, type, pointValue },
+        { params: leagueId ? { leagueId } : {} }
+      );
       return data;
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };

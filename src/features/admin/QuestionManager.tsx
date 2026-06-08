@@ -10,7 +10,7 @@ import FormSelect from "../../components/ui/FormSelect";
 import InlineSaveCancel from "./InlineSaveCancel";
 import { Plus, Check, HelpCircle, Award, Trash2 } from "lucide-react";
 
-export default function QuestionManager() {
+export default function QuestionManager({ leagueId }: { leagueId?: string | null }) {
   const dispatch = useAppDispatch();
   const tournament = useAppSelector((s) => s.tournament.active);
   const questions = useAppSelector((s) => s.questions.items);
@@ -40,6 +40,7 @@ export default function QuestionManager() {
         question: qText,
         type: qType,
         pointValue: Number(qPoints) || 10,
+        leagueId: leagueId || undefined,
       })).unwrap();
       showToast("Klausimas sukurtas!", "success");
       setQText("");
@@ -56,7 +57,7 @@ export default function QuestionManager() {
       showToast("Nuotrauka atnaujinta!", "success");
       setEditingPhoto(null);
       setPhotoUrl("");
-      if (tournament) dispatch(fetchQuestions({ tournamentId: tournament._id }));
+      if (tournament) dispatch(fetchQuestions({ tournamentId: tournament._id, leagueId: leagueId || undefined }));
     } catch {
       showToast("Nepavyko atnaujinti nuotraukos", "error");
     }
@@ -81,7 +82,7 @@ export default function QuestionManager() {
       setResolvingQuestion(null);
       setResolveAnswer("");
       setResolveImageUrl("");
-      if (tournament) dispatch(fetchQuestions({ tournamentId: tournament._id }));
+      if (tournament) dispatch(fetchQuestions({ tournamentId: tournament._id, leagueId: leagueId || undefined }));
     } catch {
       showToast("Nepavyko išspręsti klausimo", "error");
     }

@@ -4,6 +4,19 @@ export interface Player {
   name: string;
   slug: string;
   isAdmin: boolean;
+  isSuperAdmin?: boolean;
+  leagueId?: string | null;
+}
+
+export interface League {
+  _id: string;
+  name: string;
+  slug: string;
+  logoUrl: string;
+  tournamentId: string;
+  isActive?: boolean;
+  createdAt?: string;
+  memberCount?: number;
 }
 
 export interface Tournament {
@@ -77,6 +90,7 @@ export interface SpecialQuestion {
 export interface AuthState {
   token: string | null;
   player: Player | null;
+  league: League | null;
   loading: boolean;
   error: string | null;
 }

@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../../api/client";
-import { slugify } from "../../utils/slug";
 import { showToast } from "../../components/ui/Toast";
 import { showConfirm } from "../../components/ui/ConfirmDialog";
 import FormInput from "../../components/ui/FormInput";
@@ -8,32 +7,33 @@ import InlineSaveCancel from "./InlineSaveCancel";
 import { Plus, Users, Shield, ShieldOff, KeyRound, Trash2 } from "lucide-react";
 import type { Player } from "../../types";
 
-export default function PlayerManager() {
+export default function PlayerManager({ leagueId }: { leagueId?: string | null }) {
   const [allPlayers, setAllPlayers] = useState<Player[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
-  const [newPlayerSlug, setNewPlayerSlug] = useState("");
   const [newPlayerPin, setNewPlayerPin] = useState("");
   const [newPlayerAdmin, setNewPlayerAdmin] = useState(false);
   const [editingPin, setEditingPin] = useState<string | null>(null);
   const [newPin, setNewPin] = useState("");
 
-  const fetchPlayers = () => {
-    api.get<Player[]>("/players").then(({ data }) => setAllPlayers(data));
-  };
+  // leagueId is honored server-side for super-admins only (managed-league inspect).
+  const params = leagueId ? { leagueId } : {};
+
+  const fetchPlayers = useCallback(() => {
+    api.get<Player[]>("/players", { params: leagueId ? { leagueId } : {} }).then(({ data }) => setAllPlayers(data));
+  }, [leagueId]);
 
   useEffect(() => {
     fetchPlayers();
-  }, []);
+  }, [fetchPlayers]);
 
   const handleCreatePlayer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPlayerName || !newPlayerSlug || !newPlayerPin) return;
+    if (!newPlayerName || newPlayerPin.length < 4) return;
 
     try {
-      await api.post("/players", { name: newPlayerName, slug: newPlayerSlug, pin: newPlayerPin, isAdmin: newPlayerAdmin });
+      await api.post("/players", { name: newPlayerName, pin: newPlayerPin, isAdmin: newPlayerAdmin }, { params });
       showToast("Žaidėjas sukurtas!", "success");
       setNewPlayerName("");
-      setNewPlayerSlug("");
       setNewPlayerPin("");
       setNewPlayerAdmin(false);
       fetchPlayers();
@@ -44,7 +44,7 @@ export default function PlayerManager() {
 
   const handleToggleAdmin = async (playerId: string, currentAdmin: boolean) => {
     try {
-      await api.patch(`/players/${playerId}`, { isAdmin: !currentAdmin });
+      await api.patch(`/players/${playerId}`, { isAdmin: !currentAdmin }, { params });
       showToast(!currentAdmin ? "Administratorius pridėtas" : "Administratorius pašalintas", "success");
       fetchPlayers();
     } catch {
@@ -55,7 +55,7 @@ export default function PlayerManager() {
   const handleChangePin = async (playerId: string) => {
     if (!newPin || newPin.length < 4) return;
     try {
-      await api.patch(`/players/${playerId}`, { pin: newPin });
+      await api.patch(`/players/${playerId}`, { pin: newPin }, { params });
       showToast("PIN pakeistas!", "success");
       setEditingPin(null);
       setNewPin("");
@@ -72,7 +72,7 @@ export default function PlayerManager() {
       variant: "danger",
     }))) return;
     try {
-      await api.delete(`/players/${playerId}`);
+      await api.delete(`/players/${playerId}`, { params });
       showToast("Žaidėjas ištrintas", "success");
       fetchPlayers();
     } catch {
@@ -164,21 +164,9 @@ export default function PlayerManager() {
             type="text"
             placeholder="Vardas"
             value={newPlayerName}
-            onChange={(e) => {
-              setNewPlayerName(e.target.value);
-              setNewPlayerSlug(slugify(e.target.value));
-            }}
+            onChange={(e) => setNewPlayerName(e.target.value)}
             required
           />
-          <FormInput
-            type="text"
-            placeholder="Slug (pvz. vardas)"
-            value={newPlayerSlug}
-            onChange={(e) => setNewPlayerSlug(e.target.value)}
-            required
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
           <FormInput
             type="password"
             inputMode="numeric"
@@ -189,19 +177,19 @@ export default function PlayerManager() {
             className="text-center tracking-[8px]"
             required
           />
-          <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={newPlayerAdmin}
-              onChange={(e) => setNewPlayerAdmin(e.target.checked)}
-              className="w-4 h-4 accent-[var(--color-primary)]"
-            />
-            Administratorius
-          </label>
         </div>
+        <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={newPlayerAdmin}
+            onChange={(e) => setNewPlayerAdmin(e.target.checked)}
+            className="w-4 h-4 accent-[var(--color-primary)]"
+          />
+          Administratorius
+        </label>
         <button
           type="submit"
-          disabled={!newPlayerName || !newPlayerSlug || newPlayerPin.length < 4}
+          disabled={!newPlayerName || newPlayerPin.length < 4}
           className="flex items-center justify-center gap-2 py-2 bg-[var(--color-primary)] text-white rounded-xl font-bold text-sm hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer disabled:opacity-40"
         >
           <Plus size={16} />

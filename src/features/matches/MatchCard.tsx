@@ -1,7 +1,8 @@
+import { useState, useMemo } from "react";
 import Flag from "../../components/Flag";
 import { useAuth } from "../auth/useAuth";
 import { formatMatchTime, timeFromNow, isMatchStarted, getMatchUrgency, getCountdown } from "../../utils/date";
-import { Clock, Check, Timer, Trophy, AlertTriangle } from "lucide-react";
+import { Clock, Check, Timer, Trophy, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { pointsColor, pointsLabelLong, pointsBg } from "../../utils/points";
 import { getStageStyle, isKnockout } from "./stages";
 import type { Match } from "../../types";
@@ -11,12 +12,25 @@ interface MatchCardProps {
   onPredict: (matchId: string) => void;
 }
 
+// Above this many predictions the grid collapses (keeps cards short for big leagues).
+const PREDICTION_CAP = 6;
+
 export default function MatchCard({ match, onPredict }: MatchCardProps) {
   const { player } = useAuth();
+  const [showAll, setShowAll] = useState(false);
   const started = isMatchStarted(match.time);
   const currentPlayerPredicted = match.predictions.some(
     (p) => p.playerId === player?.id
   );
+
+  // Always surface the current player's own prediction first, then cap the rest.
+  const orderedPredictions = useMemo(() => {
+    const mine = match.predictions.filter((p) => p.playerId === player?.id);
+    const others = match.predictions.filter((p) => p.playerId !== player?.id);
+    return [...mine, ...others];
+  }, [match.predictions, player?.id]);
+  const visiblePredictions = showAll ? orderedPredictions : orderedPredictions.slice(0, PREDICTION_CAP);
+  const hiddenCount = orderedPredictions.length - visiblePredictions.length;
   const canPredict = !started && !currentPlayerPredicted;
   const stageStyle = getStageStyle(match.stage || "");
   const knockout = isKnockout(match.stage || "");
@@ -85,7 +99,7 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
       {/* Predictions */}
       <div className="px-4 pb-4">
         <div className="grid grid-cols-3 gap-2 text-center">
-          {match.predictions.map((pred) => (
+          {visiblePredictions.map((pred) => (
             <div key={pred.id} className={`flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg ${started ? pointsBg(pred.points) : ""}`}>
               <span className="text-[10px] text-[var(--card-text-muted)] font-medium uppercase tracking-wide">{pred.playerName}</span>
               {started ? (
@@ -104,7 +118,7 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
               )}
             </div>
           ))}
-          {/* Waiting slots */}
+          {/* Waiting slots (only meaningful for small leagues) */}
           {!started &&
             Array.from({ length: Math.max(0, 3 - match.predictions.length) }).map((_, i) => (
               <div key={`empty-${i}`} className="flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-lg">
@@ -115,6 +129,24 @@ export default function MatchCard({ match, onPredict }: MatchCardProps) {
               </div>
             ))}
         </div>
+        {(hiddenCount > 0 || showAll) && orderedPredictions.length > PREDICTION_CAP && (
+          <button
+            onClick={() => setShowAll((v) => !v)}
+            className="w-full mt-2 flex items-center justify-center gap-1 py-1 text-[var(--card-text-muted)] hover:text-[var(--card-text)] text-xs cursor-pointer transition-colors"
+          >
+            {showAll ? (
+              <>
+                <ChevronUp size={13} />
+                Rodyti mažiau
+              </>
+            ) : (
+              <>
+                <ChevronDown size={13} />
+                + dar {hiddenCount}
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Predict button */}

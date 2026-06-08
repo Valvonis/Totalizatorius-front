@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
 import { fetchActiveTournament } from "../features/tournaments/tournamentSlice";
+import { useAuth } from "../features/auth/useAuth";
 import Layout from "../components/Layout";
 import ErrorState from "../components/ui/ErrorState";
 import { Trophy, Medal, Target, TrendingUp, XCircle, BarChart3, Calendar, ChevronRight } from "lucide-react";
@@ -17,6 +18,7 @@ const rankStyles = [
 export default function LeaderboardPage() {
   const dispatch = useAppDispatch();
   const tournament = useAppSelector((s) => s.tournament.active);
+  const { league } = useAuth();
   const { entries, loading, error } = useAppSelector((s) => s.scoreboard);
 
   useEffect(() => {
@@ -35,6 +37,9 @@ export default function LeaderboardPage() {
             <BarChart3 size={22} />
             Turnyro lentelė
           </h2>
+          {league && (
+            <div className="text-white/70 text-sm font-medium mt-0.5">{league.name}</div>
+          )}
           {tournament && (
             <div className="flex items-center justify-center gap-1.5 text-white/40 text-xs mt-1">
               <Calendar size={12} />

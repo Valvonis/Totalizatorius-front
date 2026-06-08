@@ -4,10 +4,6 @@ import { useAppSelector } from "../hooks";
 import { useAuth } from "../features/auth/useAuth";
 import { logout } from "../features/auth/authSlice";
 import { useAppDispatch } from "../hooks";
-import { fetchAllTournaments, switchTournament } from "../features/tournaments/tournamentSlice";
-import { fetchMatches } from "../features/matches/matchesSlice";
-import { fetchLeaderboard } from "../features/scoreboard/scoreboardSlice";
-import { fetchQuestions } from "../features/questions/questionsSlice";
 import Scoreboard from "../features/scoreboard/Scoreboard";
 import { LogOut, Shield, Home, ChevronDown, Sun, Moon, BarChart3, KeyRound, Save, Loader2 } from "lucide-react";
 import { dayjs } from "../utils/date";
@@ -16,9 +12,8 @@ import { showToast } from "./ui/Toast";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
-  const { player, isAdmin } = useAuth();
+  const { player, isAdmin, league } = useAuth();
   const tournament = useAppSelector((s) => s.tournament.active);
-  const allTournaments = useAppSelector((s) => s.tournament.all);
 
   const [theme, setTheme] = useState<"stadium" | "gradient">(() => {
     return (localStorage.getItem("bg-theme") as "stadium" | "gradient") || "stadium";
@@ -58,17 +53,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   };
 
-  useEffect(() => {
-    dispatch(fetchAllTournaments());
-  }, [dispatch]);
-
-  const handleSwitchTournament = (id: string) => {
-    dispatch(switchTournament(id));
-    dispatch(fetchMatches({ tournamentId: id }));
-    dispatch(fetchLeaderboard({ tournamentId: id }));
-    dispatch(fetchQuestions({ tournamentId: id }));
-  };
-
   return (
     <div className="min-h-screen">
       <header className={`border-b sticky top-0 z-30 shadow-lg backdrop-blur-md transition-colors duration-500 ${theme === "stadium" ? "bg-[#0d1328]/90 border-white/10" : "bg-[var(--color-primary)]/95 border-white/20"}`}>
@@ -76,36 +60,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Link to="/" className="no-underline flex items-center gap-2">
-              {tournament?.logoUrl && (
-                <img src={tournament.logoUrl} alt="" className="h-10 w-10 object-contain" />
+              {(league?.logoUrl || tournament?.logoUrl) && (
+                <img src={league?.logoUrl || tournament?.logoUrl} alt="" className="h-10 w-10 object-contain" />
               )}
               <div>
                 <h1 className="text-white text-xl max-sm:text-lg font-bold leading-tight">
-                  {tournament?.name ?? "TOTALIZATORIUS"}
+                  {league?.name ?? tournament?.name ?? "TOTALIZATORIUS"}
                 </h1>
-                {tournament?.startDate && (
+                {tournament?.name && (
                   <span className="text-white/40 text-[10px] font-medium">
-                    {dayjs(tournament.startDate).format("YYYY.MM.DD")} – {dayjs(tournament.endDate).format("MM.DD")}
+                    {tournament.name}
+                    {tournament.startDate && ` · ${dayjs(tournament.startDate).format("YYYY.MM.DD")} – ${dayjs(tournament.endDate).format("MM.DD")}`}
                   </span>
                 )}
               </div>
             </Link>
-            {allTournaments.length > 1 && (
-              <div className="relative max-sm:hidden">
-                <select
-                  value={tournament?._id ?? ""}
-                  onChange={(e) => handleSwitchTournament(e.target.value)}
-                  className="appearance-none bg-white/10 text-white text-xs border border-white/20 rounded-lg px-2 py-1 pr-6 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/30 transition-colors hover:bg-white/20"
-                >
-                  {allTournaments.map((t) => (
-                    <option key={t._id} value={t._id} className="text-black">
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none" />
-              </div>
-            )}
           </div>
 
           {/* Scoreboard — visible on md+ in top row */}
@@ -216,25 +185,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Bottom row on mobile: scoreboard + tournament switcher */}
-        <div className="md:hidden border-t border-white/10 px-4 py-2 flex items-center justify-between gap-2">
+        {/* Bottom row on mobile: scoreboard */}
+        <div className="md:hidden border-t border-white/10 px-4 py-2">
           <Scoreboard />
-          {allTournaments.length > 1 && (
-            <div className="relative">
-              <select
-                value={tournament?._id ?? ""}
-                onChange={(e) => handleSwitchTournament(e.target.value)}
-                className="appearance-none bg-white/10 text-white text-xs border border-white/20 rounded-lg px-2 py-1 pr-6 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/30"
-              >
-                {allTournaments.map((t) => (
-                  <option key={t._id} value={t._id} className="text-black">
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none" />
-            </div>
-          )}
         </div>
       </header>
 
