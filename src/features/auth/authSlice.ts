@@ -19,8 +19,15 @@ type AuthResponse = { token: string; player: Player; league: League | null };
 function persistSession(data: { token?: string; player: Player; league: League | null }) {
   if (data.token) localStorage.setItem("token", data.token);
   localStorage.setItem("player", JSON.stringify(data.player));
-  if (data.league) localStorage.setItem("league", JSON.stringify(data.league));
-  else localStorage.removeItem("league");
+  if (data.league) {
+    localStorage.setItem("league", JSON.stringify(data.league));
+    // Breadcrumb for the login screen after logout / token expiry: which group
+    // this device last belonged to. Kept on logout on purpose, so each group
+    // only ever sees its own players on /login — never the other group's.
+    localStorage.setItem("lastLeagueSlug", data.league.slug);
+  } else {
+    localStorage.removeItem("league");
+  }
 }
 
 export const login = createAsyncThunk(
@@ -73,6 +80,8 @@ const authSlice = createSlice({
       localStorage.removeItem("token");
       localStorage.removeItem("player");
       localStorage.removeItem("league");
+      // NOTE: "lastLeagueSlug" is intentionally kept so /login shows this group's
+      // players (not the other group's) after logout. Do not remove it here.
     },
     clearError(state) {
       state.error = null;

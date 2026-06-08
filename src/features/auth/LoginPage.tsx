@@ -6,8 +6,10 @@ import api from "../../api/client";
 import type { Player } from "../../types";
 import { Trophy, Loader2 } from "lucide-react";
 
-// The original friend group logs in here; new groups use /join/:leagueSlug.
-const ORIGINAL_LEAGUE_SLUG = "original";
+// Returning members log in here. With no token yet, the server can't tell us which
+// group they're in, so we show the player list for the last league this device used
+// (default: the original group). New members still onboard via /join/:leagueSlug.
+const DEFAULT_LEAGUE_SLUG = "original";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
@@ -22,16 +24,18 @@ export default function LoginPage() {
   const [selectedSlug, setSelectedSlug] = useState("");
   const [pin, setPin] = useState("");
 
+  const leagueSlug = localStorage.getItem("lastLeagueSlug") || DEFAULT_LEAGUE_SLUG;
+
   useEffect(() => {
     if (isLoggedIn) navigate("/");
   }, [isLoggedIn, navigate]);
 
   useEffect(() => {
     api
-      .get<Player[]>(`/players/by-league/${ORIGINAL_LEAGUE_SLUG}`)
+      .get<Player[]>(`/players/by-league/${leagueSlug}`)
       .then(({ data }) => setPlayers(data))
       .catch(() => setPlayers([]));
-  }, []);
+  }, [leagueSlug]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

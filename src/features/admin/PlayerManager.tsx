@@ -37,8 +37,9 @@ export default function PlayerManager({ leagueId }: { leagueId?: string | null }
       setNewPlayerPin("");
       setNewPlayerAdmin(false);
       fetchPlayers();
-    } catch {
-      showToast("Nepavyko sukurti žaidėjo", "error");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      showToast(error.response?.data?.message || "Nepavyko sukurti žaidėjo", "error");
     }
   };
 
